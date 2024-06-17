@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="Audio"
+        android:icon="@drawable/audio"
+        android:id="@+id/audioPersonali"/>
+
+    <item android:title="Mappa"
+        android:icon="@drawable/map"
+        android:id="@+id/mappa"/>
+
+    <item android:title="Account"
+        android:icon="@drawable/account"
+        android:id="@+id/account"/>
+
+</menu>

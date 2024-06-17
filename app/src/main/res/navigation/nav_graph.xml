@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/audioPersonali">
+
+    <fragment
+        android:id="@+id/account"
+        android:name="com.derosa.progettolam.fragments.Account"
+        android:label="fragment_account"
+        tools:layout="@layout/fragment_account" />
+    <fragment
+        android:id="@+id/audioPersonali"
+        android:name="com.derosa.progettolam.fragments.AudioPersonali"
+        android:label="fragment_audio_personali"
+        tools:layout="@layout/fragment_audio_personali" />
+    <fragment
+        android:id="@+id/mappa"
+        android:name="com.derosa.progettolam.fragments.Mappa"
+        android:label="fragment_mappa"
+        tools:layout="@layout/fragment_mappa" />
+</navigation>
