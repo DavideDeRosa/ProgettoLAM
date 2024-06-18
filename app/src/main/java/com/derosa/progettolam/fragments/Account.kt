@@ -11,14 +11,20 @@ import com.derosa.progettolam.pojo.IncorrectCredentials
 import com.derosa.progettolam.pojo.MyAudio
 import com.derosa.progettolam.pojo.User
 import com.derosa.progettolam.pojo.UserAlreadyExists
+import com.derosa.progettolam.pojo.UserCorrectlyRemoved
 import com.derosa.progettolam.pojo.UserCorrectlySignedUp
 import com.derosa.progettolam.pojo.UserCorrectlySignedUpToken
+import com.derosa.progettolam.pojo.UserNotAuthorized
 import com.derosa.progettolam.retrofit.RetrofitInstance
 import com.google.gson.Gson
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
+
 
 class Account : Fragment() {
 
@@ -39,61 +45,37 @@ class Account : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val gson = Gson()
-        val user = User(username = "angelica", password = "gay")
+        val user = User("angelicacaneee", "ga")
+        val user2 = User("angelicacanee", "ga")
         val token =
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTg2NjczNTJ9.2FkjStdekRpGRSqs_omquezlO1oWltrGCL28_E9GZQU"
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTg3MDY2ODh9.HLdcaB-Ox3g7w3_1AIoDRw-xL5yjELsciYXceklS2ec"
 
         RetrofitInstance.api.auth(user).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-
-                val responseBody = response.body()
-                Log.d("Body auth", ""+ response.code() + response.message())
-
-                if (responseBody != null) {
-                    val responseBody = response.body()!!.string()
-                    try {
-                        when (response.code()) {
-                            200 -> {
-                                val userCorrectlySignedUp = gson.fromJson(
-                                    responseBody,
-                                    UserCorrectlySignedUp::class.java
-                                )
-                                Log.d(
-                                    "Auth 200",
-                                    "User correctly signed up: ${userCorrectlySignedUp.username}, ID: ${userCorrectlySignedUp.id}"
-                                )
-                            }
-
-                            400 -> {
-                                val userAlreadyExists = gson.fromJson(
-                                    responseBody,
-                                    UserAlreadyExists::class.java
-                                )
-                                Log.d(
-                                    "Auth 400",
-                                    "User correctly signed up: ${userAlreadyExists.detail}"
-                                )
-                            }
-
-                            else -> {
-                                Log.e(
-                                    "API Error",
-                                    "Unexpected response code: ${response.code()}"
-                                )
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.e("API Error", "Failed to parse response: ${e.message}")
-                    }
+                if (response.isSuccessful) {
+                    val userCorrectlySignedUp = gson.fromJson(
+                        response.body()!!.string(),
+                        UserCorrectlySignedUp::class.java
+                    )
+                    //LOGICA DOPO AVER REGISTRATO UTENTE
+                    Log.d(
+                        "Auth 200",
+                        "User correctly signed up: ${userCorrectlySignedUp.username}, ID: ${userCorrectlySignedUp.id}"
+                    )
                 } else {
-                    Log.e("API Error", "Response body is null")
+                    if (response.code() == 400) {
+                        //LOGICA SE L'UTENTE ESISTE GIA'
+                        val userAlreadyExists = gson.fromJson(
+                            response.errorBody()!!.string(),
+                            UserAlreadyExists::class.java
+                        )
+                        Log.d("Auth 400", "Auth 400 Bad Request: " + userAlreadyExists.detail)
+                    }
                 }
-
-
             }
 
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                Log.d("fail", t.message.toString())
+                Log.d("Fail Auth", t.message.toString())
             }
         })
 
@@ -103,54 +85,67 @@ class Account : Fragment() {
                     call: Call<ResponseBody>,
                     response: Response<ResponseBody>
                 ) {
-
-                    val responseBody = response.body()!!.string()
-
-                    if (responseBody != null) {
-                        try {
-                            when (response.code()) {
-                                200 -> {
-                                    val userCorrectlySignedUp = gson.fromJson(
-                                        responseBody,
-                                        UserCorrectlySignedUpToken::class.java
-                                    )
-                                    Log.d(
-                                        "AuthToken 200",
-                                        "User correctly signed up: ${userCorrectlySignedUp.client_id}, ID: ${userCorrectlySignedUp.client_secret}"
-                                    )
-                                }
-
-                                400 -> {
-                                    val incorrectCredentials = gson.fromJson(
-                                        responseBody,
-                                        IncorrectCredentials::class.java
-                                    )
-                                    Log.d(
-                                        "AuthToken 400",
-                                        "Incorrect credentials: ${incorrectCredentials.detail}"
-                                    )
-                                }
-
-                                else -> {
-                                    Log.e(
-                                        "API Error",
-                                        "Unexpected response code: ${response.code()}"
-                                    )
-                                }
-                            }
-                        } catch (e: Exception) {
-                            Log.e("API Error", "Failed to parse response: ${e.message}")
-                        }
+                    if (response.isSuccessful) {
+                        val userCorrectlySignedUp = gson.fromJson(
+                            response.body()!!.string(),
+                            UserCorrectlySignedUpToken::class.java
+                        )
+                        //LOGICA DOPO AVER REGISTRATO UTENTE
+                        Log.d(
+                            "Auth Token 200",
+                            "User correctly signed up: ${userCorrectlySignedUp.client_id}, ID: ${userCorrectlySignedUp.client_secret}"
+                        )
                     } else {
-                        Log.e("API Error", "Response body is null")
+                        if (response.code() == 400) {
+                            //LOGICA SE LE CREDENZIALI SONO ERRATE
+                            val incorrectCredentials = gson.fromJson(
+                                response.errorBody()!!.string(),
+                                IncorrectCredentials::class.java
+                            )
+                            Log.d(
+                                "Auth Token 400",
+                                "Auth Token 400 Bad Request: " + incorrectCredentials.detail
+                            )
+                        }
                     }
-
                 }
 
                 override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                    Log.d("fail", t.message.toString())
+                    Log.d("Fail Auth Token", t.message.toString())
                 }
             })
+
+        RetrofitInstance.api.authUnsubscribe(user2).enqueue(object : Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                if (response.isSuccessful) {
+                    val userCorrectlyRemoved = gson.fromJson(
+                        response.body()!!.string(),
+                        UserCorrectlyRemoved::class.java
+                    )
+                    //LOGICA DOPO AVER ELIMINATO UTENTE
+                    Log.d(
+                        "Auth Unsubscribe 200",
+                        "User correctly removed: " + userCorrectlyRemoved.detail
+                    )
+                } else {
+                    if (response.code() == 400) {
+                        //LOGICA SE LE CREDENZIALI SONO ERRATE
+                        val incorrectCredentials = gson.fromJson(
+                            response.errorBody()!!.string(),
+                            IncorrectCredentials::class.java
+                        )
+                        Log.d(
+                            "Auth Unsubscribe 400",
+                            "Auth Unsubscribe 400 Bad Request: " + incorrectCredentials.detail
+                        )
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                Log.d("Fail Auth Unsubscribe", t.message.toString())
+            }
+        })
 
         RetrofitInstance.api.myAudio(token).enqueue(object : Callback<List<MyAudio>> {
             override fun onResponse(call: Call<List<MyAudio>>, response: Response<List<MyAudio>>) {
@@ -158,14 +153,22 @@ class Account : Fragment() {
                     val risposta = response.body()
                     if (risposta!!.isNotEmpty()) {
                         for (audio in risposta) {
-                            Log.d("Audio", audio.toString())
+                            Log.d("My Audio 200", audio.toString())
                         }
                     } else {
-                        Log.d("Audio", "size 0")
+                        Log.d("My Audio 200", "size 0")
                     }
                 } else {
                     if (response.code() == 401) {
-                        Log.d("Error", "" + response.code() + response.message())
+                        //LOGICA SE UTENTE NON AUTORIZZATO
+                        val userNotAuthorized = gson.fromJson(
+                            response.errorBody()!!.string(),
+                            UserNotAuthorized::class.java
+                        )
+                        Log.d(
+                            "Auth My Audio 401",
+                            "Auth My Audio 401 User Not Authorized: " + userNotAuthorized.detail
+                        )
                     }
                 }
             }

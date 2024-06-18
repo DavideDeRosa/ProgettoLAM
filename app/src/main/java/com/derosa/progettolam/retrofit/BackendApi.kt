@@ -5,6 +5,7 @@ import com.derosa.progettolam.pojo.User
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -21,6 +22,10 @@ interface BackendApi {
     @FormUrlEncoded
     @POST("/auth/token")
     fun authToken(@Field("username") username: String, @Field("password") password: String): Call<ResponseBody>
+
+    @Headers("Content-Type: application/json")
+    @DELETE("/auth/unsubscribe")
+    fun authUnsubscribe(@Body user: User): Call<ResponseBody>
 
     @GET("/audio/my")
     fun myAudio(@Header("Authorization") token: String): Call<List<MyAudio>>

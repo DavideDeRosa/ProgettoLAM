@@ -1,24 +1,27 @@
 package com.derosa.progettolam.pojo
 
 data class UserAlreadyExists(
-    val detail: String
+    var detail: String
 )
 
 data class UserCorrectlySignedUp(
-    val username: String,
-    val id: Int
+    var username: String,
+    var id: Int
 )
 
 data class IncorrectCredentials(
-    val detail: String
+    var detail: String
 )
 
 data class UserCorrectlySignedUpToken(
-    val client_id: Int,
-    val client_secret: String
+    var client_id: Int,
+    var client_secret: String
 )
 
 data class UserCorrectlyRemoved(
-    val detail: String
+    var detail: String
 )
 
+data class UserNotAuthorized(
+    var detail: String
+)
