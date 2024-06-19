@@ -2,4 +2,7 @@
     <string name="app_name">ProgettoLAM</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="account_information">Questa simpatica app ti permette di registrare audio ovunque tu sia.
+        Gli audio verranno caricati sulla piattaforma che darà una serie di statistiche inerenti.
+        Potrai inoltre visualizzare i dati delle tue registrazioni e delle registrazioni degli altri utenti.</string>
 </resources>

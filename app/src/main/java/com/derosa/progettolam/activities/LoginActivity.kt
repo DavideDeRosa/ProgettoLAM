@@ -27,9 +27,10 @@ class LoginActivity : AppCompatActivity() {
         val textPassword = findViewById<EditText>(R.id.textPassword)
         val btnLogin = findViewById<Button>(R.id.btnLogin)
         val textRegister = findViewById<TextView>(R.id.textViewRegisterLink)
+        lateinit var username: String
 
         btnLogin.setOnClickListener {
-            val username = textUsername.text.toString().trim()
+            username = textUsername.text.toString().trim()
             val password = textPassword.text.toString().trim()
 
             if (username.isNotEmpty() && password.isNotEmpty()) {
@@ -48,6 +49,7 @@ class LoginActivity : AppCompatActivity() {
         userViewModel.observeUserCorrectlySignedUpTokenLiveData().observe(this) {
             val intent = Intent(this, AppActivity::class.java)
             intent.putExtra("token", "Bearer " + it.client_secret)
+            intent.putExtra("username", username)
             startActivity(intent)
             finish()
         }

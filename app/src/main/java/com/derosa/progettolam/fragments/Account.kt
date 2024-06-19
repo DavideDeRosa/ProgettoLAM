@@ -2,12 +2,17 @@ package com.derosa.progettolam.fragments
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -42,6 +47,18 @@ class Account : Fragment() {
 
         val btnUnsub = view.findViewById<Button>(R.id.btnUnsub)
         val btnLogout = view.findViewById<Button>(R.id.btnLogout)
+        val txtUsername = view.findViewById<TextView>(R.id.txtUsername)
+
+        val fullText = "Ciao, ${DataSingleton.username}!"
+        val spannableString = SpannableString(fullText)
+        spannableString.setSpan(
+            ForegroundColorSpan(Color.RED),
+            "Ciao, ".length,
+            fullText.length - 1,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+
+        txtUsername.text = spannableString
 
         btnUnsub.setOnClickListener {
             val token = DataSingleton.token

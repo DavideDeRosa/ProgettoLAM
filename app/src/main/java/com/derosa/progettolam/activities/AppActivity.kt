@@ -12,6 +12,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 class AppActivity : AppCompatActivity() {
 
     private lateinit var token: String
+    private lateinit var username: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,13 +23,15 @@ class AppActivity : AppCompatActivity() {
         val navController = Navigation.findNavController(this, R.id.host_fragment)
         NavigationUI.setupWithNavController(bottomNavigation, navController)
 
-        //Set dell'user token
+        //Set di username e token
         token = intent.getStringExtra("token").toString()
+        username = intent.getStringExtra("username").toString()
 
         if (token != null) {
             Log.d("token", token)
 
             DataSingleton.token = token
+            DataSingleton.username = username
         } else {
             Log.d("token", "Token is null")
         }
