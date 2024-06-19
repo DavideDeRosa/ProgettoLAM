@@ -5,18 +5,25 @@
     android:layout_height="match_parent"
     tools:context=".fragments.Account">
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:text="fragment account" />
 
     <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Logout"
+        android:layout_marginTop="30dp"
+        android:padding="10dp"/>
+
+    <Button
         android:id="@+id/btnUnsub"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Elimina account"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="100dp"
         android:padding="10dp"/>
 
 </FrameLayout>

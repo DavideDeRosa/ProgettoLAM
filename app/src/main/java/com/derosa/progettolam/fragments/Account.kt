@@ -1,5 +1,6 @@
 package com.derosa.progettolam.fragments
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -40,14 +41,19 @@ class Account : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val btnUnsub = view.findViewById<Button>(R.id.btnUnsub)
+        val btnLogout = view.findViewById<Button>(R.id.btnLogout)
 
         btnUnsub.setOnClickListener {
             val token = DataSingleton.token
             if (token != null) {
-                userViewModel.authUnsubscribe(token)
+                showUnsubscribeConfirmationDialog(token)
             } else {
                 goToLogin()
             }
+        }
+
+        btnLogout.setOnClickListener {
+            goToLogin()
         }
 
         userViewModel.observeUserCorrectlyRemovedLiveData().observe(viewLifecycleOwner) {
@@ -67,5 +73,19 @@ class Account : Fragment() {
         val intent = Intent(activity, LoginActivity::class.java)
         startActivity(intent)
         activity?.finish()
+    }
+
+    private fun showUnsubscribeConfirmationDialog(token: String) {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("Conferma")
+            .setMessage("Sei sicuro di voler cancellare il tuo account?")
+            .setPositiveButton("Si") { dialog, which ->
+                userViewModel.authUnsubscribe(token)
+                dialog.dismiss()
+            }
+            .setNegativeButton("No") { dialog, which ->
+                dialog.dismiss()
+            }
+            .show()
     }
 }
