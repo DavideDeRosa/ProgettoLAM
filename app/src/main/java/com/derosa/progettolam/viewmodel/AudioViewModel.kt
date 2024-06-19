@@ -10,11 +10,11 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class AudioViewModel: ViewModel() {
+class AudioViewModel : ViewModel() {
 
     val gson = Gson()
 
-    fun myAudio(token: String){
+    fun myAudio(token: String) {
         RetrofitInstance.api.myAudio(token).enqueue(object : Callback<List<MyAudio>> {
             override fun onResponse(call: Call<List<MyAudio>>, response: Response<List<MyAudio>>) {
                 if (response.isSuccessful) {
@@ -27,8 +27,7 @@ class AudioViewModel: ViewModel() {
                         Log.d("My Audio 200", "size 0")
                     }
                 } else {
-                    if (response.code() == 401) {
-                        //LOGICA SE UTENTE NON AUTORIZZATO
+                    if (response.code() == 401) {   //LOGICA SE UTENTE NON AUTORIZZATO
                         val userNotAuthorized = gson.fromJson(
                             response.errorBody()!!.string(),
                             UserNotAuthorized::class.java

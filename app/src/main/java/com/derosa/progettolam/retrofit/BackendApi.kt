@@ -23,9 +23,8 @@ interface BackendApi {
     @POST("/auth/token")
     fun authToken(@Field("username") username: String, @Field("password") password: String): Call<ResponseBody>
 
-    @Headers("Content-Type: application/json")
     @DELETE("/auth/unsubscribe")
-    fun authUnsubscribe(@Body user: User): Call<ResponseBody>
+    fun authUnsubscribe(@Header("Authorization") token: String): Call<ResponseBody>
 
     @GET("/audio/my")
     fun myAudio(@Header("Authorization") token: String): Call<List<MyAudio>>

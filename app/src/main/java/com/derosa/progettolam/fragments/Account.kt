@@ -1,15 +1,20 @@
 package com.derosa.progettolam.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
+import com.derosa.progettolam.activities.LoginActivity
 import com.derosa.progettolam.pojo.User
 import com.derosa.progettolam.pojo.UserCorrectlySignedUp
+import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.viewmodel.UserViewModel
 
 
@@ -33,5 +38,34 @@ class Account : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val btnUnsub = view.findViewById<Button>(R.id.btnUnsub)
+
+        btnUnsub.setOnClickListener {
+            val token = DataSingleton.token
+            if (token != null) {
+                userViewModel.authUnsubscribe(token)
+            } else {
+                goToLogin()
+            }
+        }
+
+        userViewModel.observeUserCorrectlyRemovedLiveData().observe(viewLifecycleOwner) {
+            Toast.makeText(activity, it.detail, Toast.LENGTH_SHORT).show()
+            goToLogin()
+        }
+
+        userViewModel.observeUserCorrectlyRemovedErrorLiveData().observe(viewLifecycleOwner) {
+            Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
+            goToLogin()
+        }
+    }
+
+    private fun goToLogin() {
+        DataSingleton.token = null
+
+        val intent = Intent(activity, LoginActivity::class.java)
+        startActivity(intent)
+        activity?.finish()
     }
 }

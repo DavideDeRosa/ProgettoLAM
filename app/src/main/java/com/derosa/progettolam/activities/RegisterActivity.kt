@@ -32,8 +32,7 @@ class RegisterActivity : AppCompatActivity() {
             val password = textPassword.text.toString().trim()
 
             if (username.isNotEmpty() && password.isNotEmpty()) {
-                //userViewModel.auth(User(username, password))
-                userViewModel.authFake(User(username, password))
+                userViewModel.auth(User(username, password))
             } else {
                 Toast.makeText(this, "Inserisci Username e Password", Toast.LENGTH_SHORT).show()
             }
@@ -44,7 +43,6 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         userViewModel.observeUserCorrectlySignedUpLiveData().observe(this) {
-            Toast.makeText(this, it.username + "" + it.id, Toast.LENGTH_SHORT).show()
             goToLogin()
         }
 
@@ -53,7 +51,7 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
-    private fun goToLogin(){
+    private fun goToLogin() {
         val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)
         finish()

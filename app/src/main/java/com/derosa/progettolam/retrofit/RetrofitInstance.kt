@@ -7,7 +7,7 @@ object RetrofitInstance {
 
     private const val BASE_URL = "http://130.136.2.83"
 
-    val api:BackendApi by lazy {
+    val api: BackendApi by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())

@@ -9,6 +9,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
+import com.derosa.progettolam.pojo.User
+import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.viewmodel.UserViewModel
 
 class LoginActivity : AppCompatActivity() {
@@ -31,8 +33,7 @@ class LoginActivity : AppCompatActivity() {
             val password = textPassword.text.toString().trim()
 
             if (username.isNotEmpty() && password.isNotEmpty()) {
-                //userViewModel.authToken(username, password)
-                userViewModel.authTokenFake(username, password)
+                userViewModel.authToken(username, password)
             } else {
                 Toast.makeText(this, "Inserisci Username e Password", Toast.LENGTH_SHORT).show()
             }
@@ -46,7 +47,7 @@ class LoginActivity : AppCompatActivity() {
 
         userViewModel.observeUserCorrectlySignedUpTokenLiveData().observe(this) {
             val intent = Intent(this, AppActivity::class.java)
-            intent.putExtra("token", it.client_secret)
+            intent.putExtra("token", "Bearer " + it.client_secret)
             startActivity(intent)
             finish()
         }
