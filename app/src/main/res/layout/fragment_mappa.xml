@@ -5,10 +5,8 @@
     android:layout_height="match_parent"
     tools:context=".fragments.Mappa">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <org.osmdroid.views.MapView
+        android:id="@+id/map"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="fragment mappa" />
-
+        android:layout_height="match_parent" />
 </FrameLayout>

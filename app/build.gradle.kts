@@ -60,5 +60,11 @@ dependencies {
     //viewmodel
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.2")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.2")
-    //implementation("android.arch.lifecycle:extensions:1.1.1")
+
+    //floating button
+    implementation("com.google.android.material:material:1.12.0")
+
+    //map
+    implementation("org.osmdroid:osmdroid-android:6.1.10")
+    implementation("org.osmdroid:osmdroid-wms:6.1.10")
 }
