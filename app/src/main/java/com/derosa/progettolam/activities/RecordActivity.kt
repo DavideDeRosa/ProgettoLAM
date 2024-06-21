@@ -5,40 +5,36 @@ import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
-import android.os.Looper
-import android.widget.Button
-import android.widget.SeekBar
-import android.widget.TextView
-import android.widget.Toast
+import android.view.View
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.derosa.progettolam.R
 import java.io.File
 import java.io.IOException
-import java.util.concurrent.TimeUnit
+import java.util.*
 
 class RecordActivity : AppCompatActivity() {
+
+    private var mediaRecorder: MediaRecorder? = null
+    private var mediaPlayer: MediaPlayer? = null
+    private var audioFile: File? = null
+    private var isRecording = false
+    private var isPlaying = false
 
     private lateinit var btnStartRecording: Button
     private lateinit var btnStopRecording: Button
     private lateinit var btnPlayPause: Button
-    private lateinit var seekBar: SeekBar
+    private lateinit var btnDeleteRecording: Button
+    private lateinit var btnConfirmRecording: Button
+    private lateinit var tvRecordingTime: TextView
     private lateinit var tvAudioLength: TextView
     private lateinit var tvCurrentPosition: TextView
+    private lateinit var seekBar: SeekBar
 
-    private var mediaRecorder: MediaRecorder? = null
-    private var mediaPlayer: MediaPlayer? = null
-    private lateinit var audioFile: File
-
-    private var isPlaying = false
-
-    private val handler = Handler(Looper.getMainLooper())
-
-    private val REQUEST_CODE_PERMISSIONS = 1001
-    private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    private val handler = Handler()
+    private var recordingStartTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,165 +43,176 @@ class RecordActivity : AppCompatActivity() {
         btnStartRecording = findViewById(R.id.btnStartRecording)
         btnStopRecording = findViewById(R.id.btnStopRecording)
         btnPlayPause = findViewById(R.id.btnPlayPause)
-        seekBar = findViewById(R.id.seekBar)
+        btnDeleteRecording = findViewById(R.id.btnDeleteRecording)
+        btnConfirmRecording = findViewById(R.id.btnConfirmRecording)
+        tvRecordingTime = findViewById(R.id.tvRecordingTime)
         tvAudioLength = findViewById(R.id.tvAudioLength)
         tvCurrentPosition = findViewById(R.id.tvCurrentPosition)
+        seekBar = findViewById(R.id.seekBar)
 
-        if (!allPermissionsGranted()) {
-            requestPermissions()
-        }
+        btnStartRecording.setOnClickListener { startRecording() }
+        btnStopRecording.setOnClickListener { stopRecording() }
+        btnPlayPause.setOnClickListener { playPauseAudio() }
+        btnDeleteRecording.setOnClickListener { deleteRecording() }
+        btnConfirmRecording.setOnClickListener { confirmRecording() }
 
-        btnStartRecording.setOnClickListener {
-            startRecording()
-            btnStartRecording.isEnabled = false
-            btnStopRecording.isEnabled = true
-            btnPlayPause.isEnabled = false
-        }
-
-        btnStopRecording.setOnClickListener {
-            stopRecording()
-            btnStartRecording.isEnabled = true
-            btnStopRecording.isEnabled = false
-            btnPlayPause.isEnabled = true
-        }
-
-        btnPlayPause.setOnClickListener {
-            if (isPlaying) {
-                pausePlayback()
-            } else {
-                startPlayback()
-            }
-        }
-
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    mediaPlayer?.seekTo(progress)
-                }
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-    }
-
-    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
+        requestPermissions()
+        showInitialUI()
     }
 
     private fun requestPermissions() {
-        ActivityCompat.requestPermissions(
-            this,
-            REQUIRED_PERMISSIONS,
-            REQUEST_CODE_PERMISSIONS
+        val permissions = arrayOf(
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (!allPermissionsGranted()) {
-                Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show()
-                finish()
-            }
-        }
+        ActivityCompat.requestPermissions(this, permissions, 0)
     }
 
     private fun startRecording() {
-        val audioDir = getExternalFilesDir(Environment.DIRECTORY_MUSIC)
-        if (audioDir != null) {
-            audioFile = File.createTempFile("audio_", ".mp3", audioDir)
-        }
-
-        mediaRecorder = MediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-            setOutputFile(audioFile.absolutePath)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-
-            try {
-                prepare()
-            } catch (e: IOException) {
-                e.printStackTrace()
+        if (mediaRecorder == null) {
+            mediaRecorder = MediaRecorder()
+            mediaRecorder?.apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+                audioFile = File(externalCacheDir?.absolutePath + "/audio.3gp")
+                setOutputFile(audioFile?.absolutePath)
+                try {
+                    prepare()
+                    start()
+                    isRecording = true
+                    recordingStartTime = System.currentTimeMillis()
+                    updateRecordingTime()
+                    showRecordingUI()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
             }
-            start()
         }
     }
 
     private fun stopRecording() {
-        mediaRecorder?.apply {
-            stop()
-            release()
-        }
-        mediaRecorder = null
-        Toast.makeText(this, "Audio recorded at: ${audioFile.absolutePath}", Toast.LENGTH_LONG).show()
-
-        // Get audio duration
-        val mediaPlayer = MediaPlayer().apply {
-            setDataSource(audioFile.absolutePath)
-            prepare()
-        }
-        val duration = mediaPlayer.duration
-        mediaPlayer.release()
-
-        tvAudioLength.text = formatTime(duration)
-        seekBar.max = duration
-    }
-
-    private fun startPlayback() {
-        mediaPlayer = MediaPlayer().apply {
-            try {
-                setDataSource(audioFile.absolutePath)
-                prepare()
-                start()
-            } catch (e: IOException) {
-                e.printStackTrace()
+        if (isRecording) {
+            mediaRecorder?.apply {
+                stop()
+                release()
+                mediaRecorder = null
             }
+            isRecording = false
+            showPlaybackUI()
         }
-
-        isPlaying = true
-        btnPlayPause.text = "Pause"
-
-        mediaPlayer?.setOnCompletionListener {
-            isPlaying = false
-            btnPlayPause.text = "Play"
-            tvCurrentPosition.text = "00:00"
-            seekBar.progress = 0
-        }
-
-        updateSeekBar()
     }
 
-    private fun pausePlayback() {
-        mediaPlayer?.pause()
-        isPlaying = false
-        btnPlayPause.text = "Play"
+    private fun playPauseAudio() {
+        if (audioFile != null && audioFile!!.exists()) {
+            if (isPlaying) {
+                mediaPlayer?.pause()
+                btnPlayPause.text = "Play"
+            } else {
+                if (mediaPlayer == null) {
+                    mediaPlayer = MediaPlayer().apply {
+                        setDataSource(audioFile!!.absolutePath)
+                        prepare()
+                        setOnCompletionListener {
+                            btnPlayPause.text = "Play"
+                            this@RecordActivity.isPlaying = false
+                        }
+                    }
+                }
+                mediaPlayer?.start()
+                btnPlayPause.text = "Pause"
+                updateSeekBar()
+            }
+            isPlaying = !isPlaying
+        } else {
+            Toast.makeText(this, "No audio recorded", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun deleteRecording() {
+        mediaPlayer?.release()
+        mediaPlayer = null
+        audioFile?.delete()
+        audioFile = null
+        showInitialUI()
+    }
+
+    private fun confirmRecording() {
+        // Upload the audio file or save it as required
+        Toast.makeText(this, "Recording confirmed", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun updateRecordingTime() {
+        handler.postDelayed({
+            if (isRecording) {
+                val elapsedTime = (System.currentTimeMillis() - recordingStartTime) / 1000
+                val minutes = elapsedTime / 60
+                val seconds = elapsedTime % 60
+                tvRecordingTime.text =
+                    String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+                updateRecordingTime()
+            }
+        }, 1000)
     }
 
     private fun updateSeekBar() {
         mediaPlayer?.let {
-            seekBar.progress = it.currentPosition
-            tvCurrentPosition.text = formatTime(it.currentPosition)
-            if (isPlaying) {
-                handler.postDelayed({ updateSeekBar() }, 50)
-            }
+            seekBar.max = it.duration
+            handler.postDelayed(object : Runnable {
+                override fun run() {
+                    if (isPlaying) {
+                        seekBar.progress = it.currentPosition
+                        val currentPosition = it.currentPosition / 1000
+                        val minutes = currentPosition / 60
+                        val seconds = currentPosition % 60
+                        tvCurrentPosition.text =
+                            String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+                        handler.postDelayed(this, 100)
+                    }
+                }
+            }, 100)
         }
     }
 
-    private fun formatTime(milliseconds: Int): String {
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds.toLong())
-        val seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds.toLong()) - TimeUnit.MINUTES.toSeconds(minutes)
-        return String.format("%02d:%02d", minutes, seconds)
+    private fun showRecordingUI() {
+        btnStartRecording.visibility = View.GONE
+        tvRecordingTime.visibility = View.VISIBLE
+        btnStopRecording.visibility = View.VISIBLE
     }
 
-    override fun onStop() {
-        super.onStop()
-        mediaRecorder?.release()
-        mediaRecorder = null
-        mediaPlayer?.release()
-        mediaPlayer = null
-        handler.removeCallbacksAndMessages(null)
+    private fun showPlaybackUI() {
+        btnStopRecording.visibility = View.GONE
+        tvRecordingTime.visibility = View.GONE
+        tvAudioLength.visibility = View.VISIBLE
+        tvCurrentPosition.visibility = View.VISIBLE
+        seekBar.visibility = View.VISIBLE
+        btnPlayPause.visibility = View.VISIBLE
+        btnDeleteRecording.visibility = View.VISIBLE
+        btnConfirmRecording.visibility = View.VISIBLE
+
+        mediaPlayer = MediaPlayer().apply {
+            setDataSource(audioFile!!.absolutePath)
+            prepare()
+            val duration = duration / 1000
+            val minutes = duration / 60
+            val seconds = duration % 60
+            tvAudioLength.text = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+        }
+    }
+
+    private fun showInitialUI() {
+        btnStartRecording.visibility = View.VISIBLE
+        tvRecordingTime.visibility = View.GONE
+        btnStopRecording.visibility = View.GONE
+        tvAudioLength.visibility = View.GONE
+        tvCurrentPosition.visibility = View.GONE
+        seekBar.visibility = View.GONE
+        btnPlayPause.visibility = View.GONE
+        btnDeleteRecording.visibility = View.GONE
+        btnConfirmRecording.visibility = View.GONE
+
+        tvAudioLength.text = String.format(Locale.getDefault(), "%02d:%02d", 0, 0)
+        tvCurrentPosition.text = String.format(Locale.getDefault(), "%02d:%02d", 0, 0)
+        seekBar.progress = 0
     }
 }

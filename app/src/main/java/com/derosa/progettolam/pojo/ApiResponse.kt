@@ -25,3 +25,15 @@ data class UserCorrectlyRemoved(
 data class UserNotAuthorized(
     var detail: String
 )
+
+data class FileCorrectlyUploaded(
+    var detail: String
+)
+
+data class FileTooBig(
+    var detail: String
+)
+
+data class FileNotAudio(
+    var detail: String
+)

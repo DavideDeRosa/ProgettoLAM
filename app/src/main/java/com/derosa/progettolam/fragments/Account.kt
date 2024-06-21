@@ -86,6 +86,7 @@ class Account : Fragment() {
 
     private fun goToLogin() {
         DataSingleton.token = null
+        DataSingleton.username = null
 
         val intent = Intent(activity, LoginActivity::class.java)
         startActivity(intent)
