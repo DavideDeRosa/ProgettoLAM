@@ -1,5 +1,6 @@
 package com.derosa.progettolam.fragments
 
+import AudioMetaDataDialog
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
@@ -17,7 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
-import com.derosa.progettolam.activities.AudioMetaDataActivity
+import com.derosa.progettolam.pojo.AudioMetaData
 import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.viewmodel.AudioViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -37,6 +38,7 @@ class Mappa : Fragment() {
     private lateinit var map: MapView
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var audioViewModel: AudioViewModel
+    private var customDialog: AudioMetaDataDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,7 +70,7 @@ class Mappa : Fragment() {
         }
 
         audioViewModel.observeAllAudioLiveData().observe(viewLifecycleOwner) {
-            for (audio in it){
+            for (audio in it) {
                 val marker = Marker(map)
                 val position = GeoPoint(audio.latitude, audio.longitude)
                 marker.position = position
@@ -78,9 +80,9 @@ class Mappa : Fragment() {
 
                 marker.setOnMarkerClickListener(object : Marker.OnMarkerClickListener {
                     override fun onMarkerClick(marker: Marker, mapView: MapView): Boolean {
-                        val intent = Intent(activity, AudioMetaDataActivity::class.java)
-                        intent.putExtra("id", audio.id)
-                        startActivity(intent)
+                        if (token != null) {
+                            audioViewModel.getAudioById(token, audio.id)
+                        }
                         return true
                     }
                 })
@@ -88,6 +90,14 @@ class Mappa : Fragment() {
         }
 
         audioViewModel.observeAllAudioErrorLiveData().observe(viewLifecycleOwner) {
+            Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
+        }
+
+        audioViewModel.observeAudioByIdLiveData().observe(viewLifecycleOwner) {
+            showCustomDialogAudio(it)
+        }
+
+        audioViewModel.observeAudioByIdErrorLiveData().observe(viewLifecycleOwner) {
             Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
         }
 
@@ -117,6 +127,13 @@ class Mappa : Fragment() {
                 )
             }
         }
+    }
+
+    private fun showCustomDialogAudio(audio: AudioMetaData) {
+        customDialog?.dismiss()
+
+        customDialog = AudioMetaDataDialog(requireContext(), audio)
+        customDialog?.show()
     }
 
     private fun isLocationEnabled(): Boolean {
@@ -208,10 +225,14 @@ class Mappa : Fragment() {
     override fun onResume() {
         super.onResume()
         map.onResume()
+        customDialog?.dismiss()
+        customDialog = null
     }
 
     override fun onPause() {
         super.onPause()
         map.onPause()
+        customDialog?.dismiss()
+        customDialog = null
     }
 }

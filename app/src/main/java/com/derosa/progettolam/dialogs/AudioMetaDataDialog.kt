@@ -1,47 +1,35 @@
-package com.derosa.progettolam.activities
 
+import android.app.Dialog
+import android.content.Context
 import android.location.Address
 import android.location.Geocoder
 import android.os.Bundle
+import android.view.Gravity
+import android.view.WindowManager
 import android.widget.TextView
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
 import com.derosa.progettolam.pojo.AudioMetaData
-import com.derosa.progettolam.util.DataSingleton
-import com.derosa.progettolam.viewmodel.AudioViewModel
 import java.io.IOException
 import java.util.Locale
 
-class AudioMetaDataActivity : AppCompatActivity() {
-
-    private lateinit var audioViewModel: AudioViewModel
-    private var id: Int = 0
+class AudioMetaDataDialog(
+    context: Context,
+    private val audio: AudioMetaData
+) : Dialog(context, R.style.DialogSlideAnim) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_audio_meta_data)
+        setContentView(R.layout.dialog_audio_meta_data)
 
-        audioViewModel = ViewModelProvider(this)[AudioViewModel::class.java]
+        // Adjust dialog window size and position
+        val window = window
+        window?.setLayout(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT
+        )
+        window?.setGravity(Gravity.BOTTOM)
+        setCanceledOnTouchOutside(true)
 
-        id = intent.getIntExtra("id", 0)
-
-        val token = DataSingleton.token
-        if (token != null) {
-            audioViewModel.getAudioById(token, id)
-        }
-
-        audioViewModel.observeAudioByIdLiveData().observe(this) {
-            displayAudioData(it)
-        }
-
-        audioViewModel.observeAudioByIdErrorLiveData().observe(this) {
-            Toast.makeText(this, it, Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun displayAudioData(audio: AudioMetaData) {
         findViewById<TextView>(R.id.textLongitude).text = "Longitudine: ${audio.longitude}"
         findViewById<TextView>(R.id.textLatitude).text = "Latitudine: ${audio.latitude}"
         findViewById<TextView>(R.id.textCreatorUsername).text = "Username del creatore: ${audio.creator_username}"
@@ -62,15 +50,13 @@ class AudioMetaDataActivity : AppCompatActivity() {
     }
 
     private fun getLocationName(longitude: Double, latitude: Double): String {
-        val geocoder = Geocoder(this, Locale.getDefault())
+        val geocoder = Geocoder(context, Locale.getDefault())
         var locationName = ""
 
         try {
             val addresses: MutableList<Address>? = geocoder.getFromLocation(latitude, longitude, 1)
-            if (addresses != null) {
-                if (addresses.isNotEmpty()) {
-                    locationName = addresses[0].getAddressLine(0)
-                }
+            if (addresses != null && addresses.isNotEmpty()) {
+                locationName = addresses[0].getAddressLine(0)
             }
         } catch (e: IOException) {
             e.printStackTrace()
