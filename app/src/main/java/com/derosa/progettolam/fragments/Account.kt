@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,8 +17,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
 import com.derosa.progettolam.activities.LoginActivity
-import com.derosa.progettolam.pojo.User
-import com.derosa.progettolam.pojo.UserCorrectlySignedUp
 import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.viewmodel.UserViewModel
 

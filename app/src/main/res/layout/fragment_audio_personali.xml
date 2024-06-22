@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:src="@drawable/add"
+        android:src="@drawable/mic"
         app:backgroundTint="@color/grey"
         app:tint="@color/white" />
 </FrameLayout>

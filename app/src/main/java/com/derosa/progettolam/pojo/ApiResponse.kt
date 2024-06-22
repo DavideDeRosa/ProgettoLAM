@@ -26,6 +26,13 @@ data class UserNotAuthorized(
     var detail: String
 )
 
+data class MyAudio(
+    var id: Int,
+    var longitude: Double,
+    var latitude: Double,
+    var hidden: Boolean
+)
+
 data class FileCorrectlyUploaded(
     var detail: String
 )
@@ -36,4 +43,10 @@ data class FileTooBig(
 
 data class FileNotAudio(
     var detail: String
+)
+
+data class AudioAllData(
+    var id: Int,
+    var longitude: Double,
+    var latitude: Double,
 )

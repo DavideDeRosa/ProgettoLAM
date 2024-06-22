@@ -13,6 +13,7 @@ import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Part
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface BackendApi {
@@ -41,4 +42,13 @@ interface BackendApi {
 
     @GET("audio/my")
     fun myAudio(@Header("Authorization") token: String): Call<ResponseBody>
+
+    @GET("audio/all")
+    fun allAudio(@Header("Authorization") token: String): Call<ResponseBody>
+
+    @GET("audio/{id}")
+    fun getAudioById(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Call<ResponseBody>
 }
