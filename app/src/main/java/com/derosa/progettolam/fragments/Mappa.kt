@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
@@ -13,6 +14,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -23,6 +25,7 @@ import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.viewmodel.AudioViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.OnTokenCanceledListener
@@ -32,6 +35,7 @@ import org.osmdroid.library.BuildConfig
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+
 
 class Mappa : Fragment() {
 
@@ -51,7 +55,6 @@ class Mappa : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_mappa, container, false)
     }
 
@@ -60,9 +63,11 @@ class Mappa : Fragment() {
         map = view.findViewById(R.id.map)
         map.setMultiTouchControls(true)
 
-        val bologna = GeoPoint(44.4949, 11.3426)
-        map.controller.setZoom(15.0)
-        map.controller.setCenter(bologna)
+        val italy = GeoPoint(41.8719, 12.5674)
+        map.controller.setZoom(7.0)
+        map.controller.setCenter(italy)
+
+        getLastLocation()
 
         val token = DataSingleton.token
         if (token != null) {
@@ -131,25 +136,25 @@ class Mappa : Fragment() {
 
     private fun showCustomDialogAudio(audio: AudioMetaData) {
         customDialog?.dismiss()
-
-        customDialog = AudioMetaDataDialog(requireContext(), audio)
-        customDialog?.show()
+        customDialog = AudioMetaDataDialog(audio)
+        customDialog?.show(
+            (activity as AppCompatActivity).supportFragmentManager, "AudioMetaDataDialog"
+        )
     }
 
     private fun isLocationEnabled(): Boolean {
         val locationManager =
             requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
-            LocationManager.NETWORK_PROVIDER
-        )
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
     @SuppressLint("MissingPermission")
     private fun getLastLocation() {
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-            if (location != null) {
+            if (location != null && isLocationFresh(location)) {
                 val currentLocation = GeoPoint(location.latitude, location.longitude)
-                map.controller.setZoom(15.0)
+                map.controller.setZoom(8.0)
                 map.controller.setCenter(currentLocation)
             } else {
                 getCurrentLocation()
@@ -157,6 +162,11 @@ class Mappa : Fragment() {
         }.addOnFailureListener {
             getCurrentLocation()
         }
+    }
+
+    private fun isLocationFresh(location: Location): Boolean {
+        val locationAge = System.currentTimeMillis() - location.time
+        return locationAge < 30000
     }
 
     @SuppressLint("MissingPermission")
@@ -174,22 +184,45 @@ class Mappa : Fragment() {
             }).addOnSuccessListener { location ->
             if (location != null) {
                 val currentLocation = GeoPoint(location.latitude, location.longitude)
-                map.controller.setZoom(15.0)
+                map.controller.setZoom(8.0)
                 map.controller.setCenter(currentLocation)
             } else {
-                Toast.makeText(
-                    context,
-                    "Non è possibile trovare la tua ultima posizione",
-                    Toast.LENGTH_SHORT
-                ).show()
+                startLocationUpdates()
             }
         }.addOnFailureListener {
-            Toast.makeText(
-                context,
-                "Non è possibile trovare la tua ultima posizione",
-                Toast.LENGTH_SHORT
-            ).show()
+            startLocationUpdates()
         }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun startLocationUpdates() {
+        val locationRequest = LocationRequest.create().apply {
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            interval = 5000
+            fastestInterval = 2000
+        }
+
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            object : com.google.android.gms.location.LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult) {
+                    val location = locationResult.lastLocation
+                    if (location != null) {
+                        val currentLocation = GeoPoint(location.latitude, location.longitude)
+                        map.controller.setZoom(8.0)
+                        map.controller.setCenter(currentLocation)
+                        fusedLocationClient.removeLocationUpdates(this)
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Non è possibile trovare la tua ultima posizione",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            },
+            null
+        )
     }
 
     override fun onRequestPermissionsResult(
@@ -207,8 +240,7 @@ class Mappa : Fragment() {
                         context,
                         "Abilita i servizi di localizzazione",
                         Toast.LENGTH_SHORT
-                    )
-                        .show()
+                    ).show()
                     val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                     startActivity(intent)
                 }
