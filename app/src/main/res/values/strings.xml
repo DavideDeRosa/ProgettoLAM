@@ -5,4 +5,5 @@
     <string name="account_information">Questa simpatica app ti permette di registrare audio ovunque tu sia.
         Gli audio verranno caricati sulla piattaforma che darà una serie di statistiche inerenti.
         Potrai inoltre visualizzare i dati delle tue registrazioni e delle registrazioni degli altri utenti.</string>
+    <string name="info_audio">Info audio</string>
 </resources>

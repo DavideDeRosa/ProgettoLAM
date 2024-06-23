@@ -1,5 +1,6 @@
 package com.derosa.progettolam.viewmodel
 
+import SingleLiveEvent
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -37,7 +38,7 @@ class AudioViewModel : ViewModel() {
     private var allAudioErrorLiveData = MutableLiveData<String>()
 
     //LiveData /audio/{id}
-    private var audioByIdLiveData = MutableLiveData<AudioMetaData>()
+    private var audioByIdLiveData = SingleLiveEvent<AudioMetaData>()
     private var audioByIdErrorLiveData = MutableLiveData<String>()
 
     fun uploadAudio(token: String, longitude: Double, latitude: Double, audio: RequestBody) {

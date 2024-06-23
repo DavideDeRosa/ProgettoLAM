@@ -1,3 +1,5 @@
+package com.derosa.progettolam.dialogs
+
 import android.app.Dialog
 import android.location.Address
 import android.location.Geocoder
@@ -39,6 +41,10 @@ class AudioMetaDataDialog(private val audio: AudioMetaData) : DialogFragment() {
         dialog?.window?.setGravity(Gravity.CENTER)
         dialog?.setCanceledOnTouchOutside(true)
 
+        initializeDialog(view)
+    }
+
+    private fun initializeDialog(view: View) {
         view.findViewById<TextView>(R.id.textLongitude).text = "Longitudine: ${audio.longitude}"
         view.findViewById<TextView>(R.id.textLatitude).text = "Latitudine: ${audio.latitude}"
         view.findViewById<TextView>(R.id.textCreatorUsername).text =

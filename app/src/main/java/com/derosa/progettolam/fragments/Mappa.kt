@@ -1,6 +1,5 @@
 package com.derosa.progettolam.fragments
 
-import AudioMetaDataDialog
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
@@ -14,13 +13,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
-import com.derosa.progettolam.pojo.AudioMetaData
+import com.derosa.progettolam.dialogs.AudioMetaDataDialog
 import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.viewmodel.AudioViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -36,19 +34,22 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 
-
 class Mappa : Fragment() {
 
     private lateinit var map: MapView
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var audioViewModel: AudioViewModel
-    private var customDialog: AudioMetaDataDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         audioViewModel = ViewModelProvider(this)[AudioViewModel::class.java]
+
+        val token = DataSingleton.token
+        if (token != null) {
+            audioViewModel.allAudio(token)
+        }
     }
 
     override fun onCreateView(
@@ -69,11 +70,6 @@ class Mappa : Fragment() {
 
         getLastLocation()
 
-        val token = DataSingleton.token
-        if (token != null) {
-            audioViewModel.allAudio(token)
-        }
-
         audioViewModel.observeAllAudioLiveData().observe(viewLifecycleOwner) {
             for (audio in it) {
                 val marker = Marker(map)
@@ -85,6 +81,7 @@ class Mappa : Fragment() {
 
                 marker.setOnMarkerClickListener(object : Marker.OnMarkerClickListener {
                     override fun onMarkerClick(marker: Marker, mapView: MapView): Boolean {
+                        val token = DataSingleton.token
                         if (token != null) {
                             audioViewModel.getAudioById(token, audio.id)
                         }
@@ -99,7 +96,8 @@ class Mappa : Fragment() {
         }
 
         audioViewModel.observeAudioByIdLiveData().observe(viewLifecycleOwner) {
-            showCustomDialogAudio(it)
+            val customDialog = AudioMetaDataDialog(it)
+            customDialog.show(parentFragmentManager, "AudioMetaDataDialog")
         }
 
         audioViewModel.observeAudioByIdErrorLiveData().observe(viewLifecycleOwner) {
@@ -132,14 +130,6 @@ class Mappa : Fragment() {
                 )
             }
         }
-    }
-
-    private fun showCustomDialogAudio(audio: AudioMetaData) {
-        customDialog?.dismiss()
-        customDialog = AudioMetaDataDialog(audio)
-        customDialog?.show(
-            (activity as AppCompatActivity).supportFragmentManager, "AudioMetaDataDialog"
-        )
     }
 
     private fun isLocationEnabled(): Boolean {
@@ -257,14 +247,10 @@ class Mappa : Fragment() {
     override fun onResume() {
         super.onResume()
         map.onResume()
-        customDialog?.dismiss()
-        customDialog = null
     }
 
     override fun onPause() {
         super.onPause()
         map.onPause()
-        customDialog?.dismiss()
-        customDialog = null
     }
 }
