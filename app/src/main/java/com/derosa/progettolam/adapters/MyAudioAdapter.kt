@@ -1,20 +1,27 @@
 package com.derosa.progettolam.adapters
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.location.Address
+import android.location.Geocoder
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.derosa.progettolam.databinding.MyAudioItemBinding
+import com.derosa.progettolam.pojo.MyAudio
+import java.io.IOException
+import java.util.Locale
 
-class MyAudioAdapter : RecyclerView.Adapter<MyAudioAdapter.MyAudioViewHolder>() {
+class MyAudioAdapter(private val context: Context?) : RecyclerView.Adapter<MyAudioAdapter.MyAudioViewHolder>() {
 
     inner class MyAudioViewHolder(val binding: MyAudioItemBinding) :
         RecyclerView.ViewHolder(binding.root)
 
-    private var myAudioList = ArrayList<String>()
+    private var myAudioList = ArrayList<MyAudio>()
+    var onItemClick: ((MyAudio) -> Unit)? = null
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setMyAudioList(list: ArrayList<String>) {
+    fun setMyAudioList(list: ArrayList<MyAudio>) {
         myAudioList = list
         notifyDataSetChanged()
     }
@@ -26,10 +33,36 @@ class MyAudioAdapter : RecyclerView.Adapter<MyAudioAdapter.MyAudioViewHolder>() 
     }
 
     override fun onBindViewHolder(holder: MyAudioViewHolder, position: Int) {
-        holder.binding.txtLuogoMyAudio.text = myAudioList[position]
+        var location = getLocationName(myAudioList[position].longitude, myAudioList[position].latitude)
+
+        if (location == "") {
+            holder.binding.txtLuogoMyAudio.text = "Luogo sconosciuto! Longitudine: " + myAudioList[position].longitude + " Latitudine: " + myAudioList[position].latitude
+        } else {
+            holder.binding.txtLuogoMyAudio.text = location
+        }
+
+        holder.itemView.setOnClickListener {
+            onItemClick!!.invoke(myAudioList[position])
+        }
     }
 
     override fun getItemCount(): Int {
         return myAudioList.size
+    }
+
+    private fun getLocationName(longitude: Double, latitude: Double): String {
+        val geocoder = Geocoder(context!!, Locale.getDefault())
+        var locationName = ""
+
+        try {
+            val addresses: List<Address>? = geocoder.getFromLocation(latitude, longitude, 1)
+            if (addresses != null && addresses.isNotEmpty()) {
+                locationName = addresses[0].getAddressLine(0)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return locationName
     }
 }

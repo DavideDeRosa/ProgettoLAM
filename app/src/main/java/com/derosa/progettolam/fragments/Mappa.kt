@@ -19,7 +19,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
 import com.derosa.progettolam.activities.LoginActivity
-import com.derosa.progettolam.dialogs.AudioMetaDataDialog
+import com.derosa.progettolam.dialogs.AudioMetadataDialog
 import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.viewmodel.AudioViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -96,7 +96,7 @@ class Mappa : Fragment() {
         }
 
         audioViewModel.observeAudioByIdLiveData().observe(viewLifecycleOwner) {
-            val customDialog = AudioMetaDataDialog(it)
+            val customDialog = AudioMetadataDialog(it)
             customDialog.show(parentFragmentManager, "AudioMetaDataDialog")
         }
 

@@ -15,7 +15,7 @@ import com.derosa.progettolam.pojo.AudioMetaData
 import java.io.IOException
 import java.util.Locale
 
-class AudioMetaDataDialog(private val audio: AudioMetaData) : DialogFragment() {
+class MyAudioMetadataDialog(private val audio: AudioMetaData): DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return super.onCreateDialog(savedInstanceState).apply {
@@ -28,7 +28,7 @@ class AudioMetaDataDialog(private val audio: AudioMetaData) : DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.dialog_audio_meta_data, container, false)
+        return inflater.inflate(R.layout.dialog_myaudio_meta_data, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

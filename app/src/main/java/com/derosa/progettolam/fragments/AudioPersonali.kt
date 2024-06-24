@@ -1,8 +1,6 @@
 package com.derosa.progettolam.fragments
 
 import android.content.Intent
-import android.location.Address
-import android.location.Geocoder
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,12 +13,10 @@ import com.derosa.progettolam.R
 import com.derosa.progettolam.activities.RecordActivity
 import com.derosa.progettolam.adapters.MyAudioAdapter
 import com.derosa.progettolam.databinding.FragmentAudioPersonaliBinding
-import com.derosa.progettolam.pojo.MyAudio
+import com.derosa.progettolam.dialogs.MyAudioMetadataDialog
 import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.viewmodel.AudioViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import java.io.IOException
-import java.util.Locale
 
 class AudioPersonali : Fragment() {
 
@@ -40,7 +36,7 @@ class AudioPersonali : Fragment() {
         binding = FragmentAudioPersonaliBinding.inflate(inflater, container, false)
 
         binding.recyclerView.layoutManager = LinearLayoutManager(activity)
-        myAudioAdapter = MyAudioAdapter()
+        myAudioAdapter = MyAudioAdapter(context)
         binding.recyclerView.adapter = myAudioAdapter
 
         return binding.root
@@ -50,7 +46,7 @@ class AudioPersonali : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         audioViewModel.observeAudioMyLiveData().observe(viewLifecycleOwner) {
-            loadMyAudio(it)
+            myAudioAdapter.setMyAudioList(ArrayList(it))
         }
 
         audioViewModel.observeAudioMyErrorLiveData().observe(viewLifecycleOwner) {
@@ -62,43 +58,28 @@ class AudioPersonali : Fragment() {
             audioViewModel.myAudio(token)
         }
 
+        onMyAudioClick()
+
         val btnAddAudio = view.findViewById<FloatingActionButton>(R.id.addAudio)
         btnAddAudio.setOnClickListener {
             val intent = Intent(activity, RecordActivity::class.java)
             startActivity(intent)
             //activity?.finish()    in questo modo tornando indietro possiamo tornare alla pagina principale
         }
-    }
 
-    private fun loadMyAudio(myAudioList: List<MyAudio>) {
-        var myAudioListString: ArrayList<String> = ArrayList()
-
-        for (audio in myAudioList) {
-            var location = getLocationName(audio.longitude, audio.latitude)
-
-            if (location == "") {
-                myAudioListString.add("Luogo sconosciuto! Longitudine: " + audio.longitude + " Latitudine: " + audio.latitude)
-            } else {
-                myAudioListString.add(location)
-            }
+        audioViewModel.observeAudioByIdLiveData().observe(viewLifecycleOwner) {
+            val customDialog = MyAudioMetadataDialog(it)
+            customDialog.show(parentFragmentManager, "AudioMetaDataDialog")
         }
 
-        myAudioAdapter.setMyAudioList(myAudioListString)
     }
 
-    private fun getLocationName(longitude: Double, latitude: Double): String {
-        val geocoder = Geocoder(requireContext(), Locale.getDefault())
-        var locationName = ""
-
-        try {
-            val addresses: List<Address>? = geocoder.getFromLocation(latitude, longitude, 1)
-            if (addresses != null && addresses.isNotEmpty()) {
-                locationName = addresses[0].getAddressLine(0)
+    private fun onMyAudioClick() {
+        myAudioAdapter.onItemClick = {
+            val token = DataSingleton.token
+            if (token != null) {
+                audioViewModel.getAudioById(token, it.id)
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
         }
-
-        return locationName
     }
 }
