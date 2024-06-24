@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
+import com.derosa.progettolam.activities.LoginActivity
 import com.derosa.progettolam.dialogs.AudioMetaDataDialog
 import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.viewmodel.AudioViewModel
@@ -64,11 +65,9 @@ class Mappa : Fragment() {
         map = view.findViewById(R.id.map)
         map.setMultiTouchControls(true)
 
-        val italy = GeoPoint(41.8719, 12.5674)
+        val startingPoint = GeoPoint(41.8719, 12.5674) //Italy as a starting point
         map.controller.setZoom(7.0)
-        map.controller.setCenter(italy)
-
-        getLastLocation()
+        map.controller.setCenter(startingPoint)
 
         audioViewModel.observeAllAudioLiveData().observe(viewLifecycleOwner) {
             for (audio in it) {
@@ -93,6 +92,7 @@ class Mappa : Fragment() {
 
         audioViewModel.observeAllAudioErrorLiveData().observe(viewLifecycleOwner) {
             Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
+            goToLogin()
         }
 
         audioViewModel.observeAudioByIdLiveData().observe(viewLifecycleOwner) {
@@ -102,15 +102,12 @@ class Mappa : Fragment() {
 
         audioViewModel.observeAudioByIdErrorLiveData().observe(viewLifecycleOwner) {
             Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
+            goToLogin()
         }
 
         val fabMyLocation: FloatingActionButton = view.findViewById(R.id.myLocation)
         fabMyLocation.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
+            if (checkPermission()) {
                 if (isLocationEnabled()) {
                     getLastLocation()
                 } else {
@@ -119,17 +116,21 @@ class Mappa : Fragment() {
                         "Abilita i servizi di localizzazione",
                         Toast.LENGTH_SHORT
                     ).show()
+
                     val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                     startActivity(intent)
                 }
             } else {
-                ActivityCompat.requestPermissions(
-                    requireActivity(),
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                    LOCATION_PERMISSION_REQUEST_CODE
-                )
+                askPermission()
             }
         }
+    }
+
+    private fun checkPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun isLocationEnabled(): Boolean {
@@ -137,6 +138,14 @@ class Mappa : Fragment() {
             requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    private fun askPermission() {
+        ActivityCompat.requestPermissions(
+            requireActivity(),
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            LOCATION_PERMISSION_REQUEST_CODE
+        )
     }
 
     @SuppressLint("MissingPermission")
@@ -221,6 +230,7 @@ class Mappa : Fragment() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 if (isLocationEnabled()) {
@@ -252,5 +262,14 @@ class Mappa : Fragment() {
     override fun onPause() {
         super.onPause()
         map.onPause()
+    }
+
+    private fun goToLogin() {
+        DataSingleton.token = null
+        DataSingleton.username = null
+
+        val intent = Intent(activity, LoginActivity::class.java)
+        startActivity(intent)
+        activity?.finish()
     }
 }

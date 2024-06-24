@@ -38,7 +38,7 @@ interface BackendApi {
         @Query("longitude") longitude: Double,
         @Query("latitude") latitude: Double,
         @Part audio: RequestBody
-    ): Call<ResponseBody>
+    ): Call<ResponseBody> //da testare
 
     @GET("audio/my")
     fun myAudio(@Header("Authorization") token: String): Call<ResponseBody>
@@ -48,6 +48,24 @@ interface BackendApi {
 
     @GET("audio/{id}")
     fun getAudioById(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Call<ResponseBody>
+
+    @GET("audio/my/{id}/hide")
+    fun myAudioHide(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Call<ResponseBody>
+
+    @GET("audio/my/{id}/show")
+    fun myAudioShow(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Call<ResponseBody>
+
+    @DELETE("audio/{id}") // su documentazione è audio/my/{id}, errata
+    fun myAudioDelete(
         @Header("Authorization") token: String,
         @Path("id") id: Int
     ): Call<ResponseBody>

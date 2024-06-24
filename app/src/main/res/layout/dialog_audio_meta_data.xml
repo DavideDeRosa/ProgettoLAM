@@ -13,11 +13,12 @@
 
         <TextView
             android:id="@+id/textIniziale"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/info_audio"
-            android:textSize="40sp"
+            android:textAlignment="center"
             android:textColor="@color/black"
+            android:textSize="40sp"
             android:textStyle="bold" />
 
         <TextView
@@ -31,7 +32,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textStyle="bold" />
-        
+
         <TextView
             android:id="@+id/textLongitude"
             android:layout_width="wrap_content"

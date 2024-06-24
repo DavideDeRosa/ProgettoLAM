@@ -50,3 +50,19 @@ data class AudioAllData(
     var longitude: Double,
     var latitude: Double,
 )
+
+data class AudioSuccessfullyHidden(
+    var detail: String
+)
+
+data class AudioSuccessfullyShown(
+    var detail: String
+)
+
+data class AudioSuccessfullyDeleted(
+    var detail: String
+)
+
+data class AudioNotFound(
+    var detail: String
+)

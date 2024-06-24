@@ -55,6 +55,7 @@ class UserViewModel : ViewModel() {
                             response.errorBody()!!.string(),
                             UserAlreadyExists::class.java
                         )
+
                         Log.d("Auth 400", "Auth 400 Bad Request: " + userAlreadyExists.detail)
 
                         userCorrectlySignedUpErrorLiveData.value = userAlreadyExists.detail

@@ -7,6 +7,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.derosa.progettolam.pojo.AudioAllData
 import com.derosa.progettolam.pojo.AudioMetaData
+import com.derosa.progettolam.pojo.AudioNotFound
+import com.derosa.progettolam.pojo.AudioSuccessfullyDeleted
+import com.derosa.progettolam.pojo.AudioSuccessfullyHidden
+import com.derosa.progettolam.pojo.AudioSuccessfullyShown
 import com.derosa.progettolam.pojo.FileCorrectlyUploaded
 import com.derosa.progettolam.pojo.FileNotAudio
 import com.derosa.progettolam.pojo.FileTooBig
@@ -30,7 +34,7 @@ class AudioViewModel : ViewModel() {
     private var fileCorrectlyUploadedErrorLiveData = MutableLiveData<String>()
 
     //LiveData /audio/my
-    private var audioMyLiveData = MutableLiveData<List<MyAudio>>()
+    private var audioMyLiveData = SingleLiveEvent<List<MyAudio>>()
     private var audioMyErrorLiveData = MutableLiveData<String>()
 
     //LiveData /audio/all
@@ -40,6 +44,18 @@ class AudioViewModel : ViewModel() {
     //LiveData /audio/{id}
     private var audioByIdLiveData = SingleLiveEvent<AudioMetaData>()
     private var audioByIdErrorLiveData = MutableLiveData<String>()
+
+    //LiveData /audio/my/{id}/hide
+    private var audioHideLiveData = MutableLiveData<AudioSuccessfullyHidden>()
+    private var audioHideErrorLiveData = MutableLiveData<String>()
+
+    //LiveData /audio/my/{id}/show
+    private var audioShowLiveData = MutableLiveData<AudioSuccessfullyShown>()
+    private var audioShowErrorLiveData = MutableLiveData<String>()
+
+    //LiveData /audio/{id}      DELETE
+    private var audioDeleteLiveData = MutableLiveData<AudioSuccessfullyDeleted>()
+    private var audioDeleteErrorLiveData = MutableLiveData<String>()
 
     fun uploadAudio(token: String, longitude: Double, latitude: Double, audio: RequestBody) {
         RetrofitInstance.api.uploadAudio(token, longitude, latitude, audio)
@@ -74,7 +90,7 @@ class AudioViewModel : ViewModel() {
 
                                 Log.d(
                                     "UploadAudio 413",
-                                    "UploadAudio 415 File too big: " + fileTooBig.detail
+                                    "UploadAudio 413 File too big: " + fileTooBig.detail
                                 )
 
                                 fileCorrectlyUploadedErrorLiveData.value = fileTooBig.detail
@@ -94,7 +110,6 @@ class AudioViewModel : ViewModel() {
                                 fileCorrectlyUploadedErrorLiveData.value = fileNotAudio.detail
                             }
                         }
-
                     }
                 }
 
@@ -215,7 +230,10 @@ class AudioViewModel : ViewModel() {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (response.isSuccessful) {
                     val audioMetaData =
-                        gson.fromJson(response.body()!!.string(), AudioMetaData::class.java)
+                        gson.fromJson(
+                            response.body()!!.string(),
+                            AudioMetaData::class.java
+                        )
 
                     Log.d(
                         "AudioById 200",
@@ -254,5 +272,197 @@ class AudioViewModel : ViewModel() {
 
     fun observeAudioByIdErrorLiveData(): LiveData<String> {
         return audioByIdErrorLiveData
+    }
+
+    fun hideAudio(token: String, audioid: Int) {
+        RetrofitInstance.api.myAudioHide(token, audioid).enqueue(object : Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                if (response.isSuccessful) {
+                    val audioSuccessfullyHidden = gson.fromJson(
+                        response.body()!!.string(),
+                        AudioSuccessfullyHidden::class.java
+                    )
+
+                    Log.d(
+                        "AudioHide 200",
+                        "AudioHide 200: " + audioSuccessfullyHidden.toString()
+                    )
+
+                    audioHideLiveData.value = audioSuccessfullyHidden
+                } else {
+                    when (response.code()) {
+                        401 -> {
+                            val userNotAuthorized = gson.fromJson(
+                                response.errorBody()!!.string(),
+                                UserNotAuthorized::class.java
+                            )
+
+                            Log.d(
+                                "AudioHide 401",
+                                "AudioHide 401 User Not Authorized: " + userNotAuthorized.detail
+                            )
+
+                            audioHideErrorLiveData.value = userNotAuthorized.detail
+                        }
+
+                        404 -> {
+                            val audioNotFound = gson.fromJson(
+                                response.errorBody()!!.string(),
+                                AudioNotFound::class.java
+                            )
+
+                            Log.d(
+                                "AudioHide 404",
+                                "AudioHide 404 Audio Not Found: " + audioNotFound.detail
+                            )
+
+                            audioHideErrorLiveData.value = audioNotFound.detail
+                        }
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                Log.d("Fail AudioHide", t.message.toString())
+
+                audioHideErrorLiveData.value = t.message
+            }
+        })
+    }
+
+    fun observeAudioHideLiveData(): LiveData<AudioSuccessfullyHidden> {
+        return audioHideLiveData
+    }
+
+    fun observeAudioHideErrorLiveData(): LiveData<String> {
+        return audioHideErrorLiveData
+    }
+
+    fun showAudio(token: String, audioid: Int) {
+        RetrofitInstance.api.myAudioShow(token, audioid).enqueue(object : Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                if (response.isSuccessful) {
+                    val audioSuccessfullyShown = gson.fromJson(
+                        response.body()!!.string(),
+                        AudioSuccessfullyShown::class.java
+                    )
+
+                    Log.d(
+                        "AudioShow 200",
+                        "AudioShow 200: " + audioSuccessfullyShown.toString()
+                    )
+
+                    audioShowLiveData.value = audioSuccessfullyShown
+                } else {
+                    when (response.code()) {
+                        401 -> {
+                            val userNotAuthorized = gson.fromJson(
+                                response.errorBody()!!.string(),
+                                UserNotAuthorized::class.java
+                            )
+
+                            Log.d(
+                                "AudioShow 401",
+                                "AudioShow 401 User Not Authorized: " + userNotAuthorized.detail
+                            )
+
+                            audioShowErrorLiveData.value = userNotAuthorized.detail
+                        }
+
+                        404 -> {
+                            val audioNotFound = gson.fromJson(
+                                response.errorBody()!!.string(),
+                                AudioNotFound::class.java
+                            )
+
+                            Log.d(
+                                "AudioShow 404",
+                                "AudioShow 404 Audio Not Found: " + audioNotFound.detail
+                            )
+
+                            audioShowErrorLiveData.value = audioNotFound.detail
+                        }
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                Log.d("Fail AudioShow", t.message.toString())
+
+                audioShowErrorLiveData.value = t.message
+            }
+        })
+    }
+
+    fun observeAudioShowLiveData(): LiveData<AudioSuccessfullyShown> {
+        return audioShowLiveData
+    }
+
+    fun observeAudioShowErrorLiveData(): LiveData<String> {
+        return audioShowErrorLiveData
+    }
+
+    fun deleteAudio(token: String, audioid: Int) {
+        RetrofitInstance.api.myAudioDelete(token, audioid).enqueue(object : Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                if (response.isSuccessful) {
+                    val audioSuccessfullyDeleted = gson.fromJson(
+                        response.body()!!.string(),
+                        AudioSuccessfullyDeleted::class.java
+                    )
+
+                    Log.d(
+                        "AudioDelete 200",
+                        "AudioDelete 200: " + audioSuccessfullyDeleted.toString()
+                    )
+
+                    audioDeleteLiveData.value = audioSuccessfullyDeleted
+                } else {
+                    when (response.code()) {
+                        401 -> {
+                            val userNotAuthorized = gson.fromJson(
+                                response.errorBody()!!.string(),
+                                UserNotAuthorized::class.java
+                            )
+
+                            Log.d(
+                                "AudioDelete 401",
+                                "AudioDelete 401 User Not Authorized: " + userNotAuthorized.detail
+                            )
+
+                            audioDeleteErrorLiveData.value = userNotAuthorized.detail
+                        }
+
+                        404 -> {
+                            val audioNotFound = gson.fromJson(
+                                response.errorBody()!!.string(),
+                                AudioNotFound::class.java
+                            )
+
+                            Log.d(
+                                "AudioDelete 404",
+                                "AudioDelete 404 Audio Not Found: " + audioNotFound.detail
+                            )
+
+                            audioDeleteErrorLiveData.value = audioNotFound.detail
+                        }
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                Log.d("Fail AudioDelete", t.message.toString())
+
+                audioDeleteErrorLiveData.value = t.message
+            }
+        })
+    }
+
+    fun observeAudioDeleteLiveData(): LiveData<AudioSuccessfullyDeleted> {
+        return audioDeleteLiveData
+    }
+
+    fun observeAudioDeleteErrorLiveData(): LiveData<String> {
+        return audioDeleteErrorLiveData
     }
 }
