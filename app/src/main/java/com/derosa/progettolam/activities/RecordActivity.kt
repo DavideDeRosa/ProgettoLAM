@@ -1,19 +1,22 @@
 package com.derosa.progettolam.activities
 
 import android.Manifest
-import android.content.pm.PackageManager
+import android.content.Intent
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Bundle
 import android.os.Handler
 import android.view.View
-import android.widget.*
+import android.widget.Button
+import android.widget.SeekBar
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.derosa.progettolam.R
 import java.io.File
 import java.io.IOException
-import java.util.*
+import java.util.Locale
 
 class RecordActivity : AppCompatActivity() {
 
@@ -214,5 +217,12 @@ class RecordActivity : AppCompatActivity() {
         tvAudioLength.text = String.format(Locale.getDefault(), "%02d:%02d", 0, 0)
         tvCurrentPosition.text = String.format(Locale.getDefault(), "%02d:%02d", 0, 0)
         seekBar.progress = 0
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        val intent = Intent(this, AppActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:background="@color/white"
-    android:gravity="bottom"
+    android:gravity="center"
     android:padding="16dp">
 
     <LinearLayout
@@ -19,7 +19,8 @@
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textSize="40sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/textCreatorUsername"
@@ -80,5 +81,66 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="5dp">
+
+            <Button
+                android:id="@+id/btnPlay"
+                android:layout_width="0dp"
+                android:layout_height="55dp"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@color/lightgrey"
+                android:padding="10dp"
+                android:text="@string/play"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="5dp">
+
+            <Button
+                android:id="@+id/btnHide"
+                android:layout_width="0dp"
+                android:layout_height="55dp"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@color/grey"
+                android:padding="10dp"
+                android:text="@string/nascondi_audio"
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btnDelete"
+                android:layout_width="0dp"
+                android:layout_height="55dp"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@color/red"
+                android:padding="10dp"
+                android:text="@string/cancella_audio"
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
     </LinearLayout>
 </RelativeLayout>

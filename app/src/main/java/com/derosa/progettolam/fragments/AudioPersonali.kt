@@ -1,5 +1,6 @@
 package com.derosa.progettolam.fragments
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,10 +11,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.derosa.progettolam.R
+import com.derosa.progettolam.activities.MyAudioActivity
 import com.derosa.progettolam.activities.RecordActivity
 import com.derosa.progettolam.adapters.MyAudioAdapter
 import com.derosa.progettolam.databinding.FragmentAudioPersonaliBinding
-import com.derosa.progettolam.dialogs.MyAudioMetadataDialog
 import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.viewmodel.AudioViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -23,6 +24,7 @@ class AudioPersonali : Fragment() {
     private lateinit var binding: FragmentAudioPersonaliBinding
     private lateinit var myAudioAdapter: MyAudioAdapter
     private lateinit var audioViewModel: AudioViewModel
+    private var audio_id: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +55,17 @@ class AudioPersonali : Fragment() {
             Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
         }
 
+        audioViewModel.observeAudioShowLiveData().observe(viewLifecycleOwner) {
+            val intent = Intent(activity, MyAudioActivity::class.java)
+            intent.putExtra("audio_id", audio_id)
+            startActivity(intent)
+            activity?.finish()
+        }
+
+        audioViewModel.observeAudioShowErrorLiveData().observe(viewLifecycleOwner) {
+            Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
+        }
+
         val token = DataSingleton.token
         if (token != null) {
             audioViewModel.myAudio(token)
@@ -64,22 +77,38 @@ class AudioPersonali : Fragment() {
         btnAddAudio.setOnClickListener {
             val intent = Intent(activity, RecordActivity::class.java)
             startActivity(intent)
-            //activity?.finish()    in questo modo tornando indietro possiamo tornare alla pagina principale
+            activity?.finish()
         }
-
-        audioViewModel.observeAudioByIdLiveData().observe(viewLifecycleOwner) {
-            val customDialog = MyAudioMetadataDialog(it)
-            customDialog.show(parentFragmentManager, "AudioMetaDataDialog")
-        }
-
     }
 
     private fun onMyAudioClick() {
         myAudioAdapter.onItemClick = {
             val token = DataSingleton.token
             if (token != null) {
-                audioViewModel.getAudioById(token, it.id)
+                if (it.hidden) {
+                    showShowConfirmationDialog(token, it.id)
+                } else {
+                    val intent = Intent(activity, MyAudioActivity::class.java)
+                    intent.putExtra("audio_id", it.id)
+                    startActivity(intent)
+                    activity?.finish()
+                }
             }
         }
+    }
+
+    private fun showShowConfirmationDialog(token: String, id: Int) {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("Conferma")
+            .setMessage("L'audio è nascosto. Per visualizzare i suoi dati devi renderlo visibile. Procedere?")
+            .setPositiveButton("Si") { dialog, which ->
+                audioViewModel.showAudio(token, id)
+                audio_id = id
+                dialog.dismiss()
+            }
+            .setNegativeButton("No") { dialog, which ->
+                dialog.dismiss()
+            }
+            .show()
     }
 }

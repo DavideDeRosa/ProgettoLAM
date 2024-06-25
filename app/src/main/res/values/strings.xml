@@ -7,4 +7,8 @@
         Potrai inoltre visualizzare i dati delle tue registrazioni e delle registrazioni degli altri utenti.</string>
     <string name="info_audio">Info audio</string>
     <string name="i_tuoi_audio">I tuoi audio</string>
+    <string name="nascondi_audio">Nascondi</string>
+    <string name="mostra_audio">Mostra</string>
+    <string name="play">Play</string>
+    <string name="cancella_audio">Cancella</string>
 </resources>
