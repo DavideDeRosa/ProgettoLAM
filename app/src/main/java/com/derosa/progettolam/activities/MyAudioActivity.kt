@@ -6,6 +6,7 @@ import android.location.Address
 import android.location.Geocoder
 import android.media.MediaPlayer
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -17,6 +18,7 @@ import com.derosa.progettolam.adapters.MyAudioAdapter
 import com.derosa.progettolam.pojo.AudioMetaData
 import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.viewmodel.AudioViewModel
+import java.io.File
 import java.io.IOException
 import java.util.Locale
 
@@ -85,13 +87,22 @@ class MyAudioActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnPlay).setOnClickListener {
             val username = DataSingleton.username
-            mediaPlayer = MediaPlayer()
-            mediaPlayer?.apply {
-                setDataSource(externalCacheDir?.absolutePath + "/" + username + "_" + audio.longitude + "_" + audio.latitude + ".mp3")
-                prepare()
-                start()
+            val audioFilePath =
+                externalCacheDir?.absolutePath + "/" + username + "_" + audio.longitude + "_" + audio.latitude + ".mp3"
+            val audioFile = File(audioFilePath)
+
+            if (audioFile.exists()) {
+                mediaPlayer = MediaPlayer()
+                mediaPlayer?.apply {
+                    setDataSource(audioFilePath)
+                    prepare()
+                    start()
+                }
+            } else {
+                Toast.makeText(this, "Il file audio non esiste", Toast.LENGTH_SHORT).show()
             }
         }
+
 
         findViewById<Button>(R.id.btnStop).setOnClickListener {
             mediaPlayer?.let {
@@ -148,12 +159,28 @@ class MyAudioActivity : AppCompatActivity() {
             .setMessage("Sei sicuro di voler cancellare l'audio?")
             .setPositiveButton("Si") { dialog, which ->
                 audioViewModel.deleteAudio(token, audio.id)
+                deleteAudio(audio)
                 dialog.dismiss()
             }
             .setNegativeButton("No") { dialog, which ->
                 dialog.dismiss()
             }
             .show()
+    }
+
+    private fun deleteAudio(audio: AudioMetaData) {
+        val username = DataSingleton.username
+        val audioFile =
+            File(externalCacheDir?.absolutePath + "/" + username + "_" + audio.longitude + "_" + audio.latitude + ".mp3")
+
+        if (audioFile.exists()) {
+            val deleted = audioFile.delete()
+            if (deleted) {
+                Log.d("File Deletion", "Audio file deleted successfully.")
+            } else {
+                Log.d("File Deletion Error", "Failed to delete Audio file.")
+            }
+        }
     }
 
     private fun getLocationName(longitude: Double, latitude: Double): String {

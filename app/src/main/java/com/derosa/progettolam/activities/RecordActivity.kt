@@ -163,6 +163,16 @@ class RecordActivity : AppCompatActivity() {
                         MultipartBody.Part.createFormData("file", mp3File.name, requestBody)
 
                     audioViewModel.uploadAudio(token, longitude, latitude, fileUpload)
+
+                    val mp4File = File(recordedFilePath)
+                    if (mp4File.exists()) {
+                        val deleted = mp4File.delete()
+                        if (deleted) {
+                            Log.d("File Deletion", "MP4 file deleted successfully.")
+                        } else {
+                            Log.d("File Deletion", "Failed to delete MP4 file.")
+                        }
+                    }
                 } else {
                     Log.d("File Error", "MP3 file does not exist or cannot be read.")
                 }
