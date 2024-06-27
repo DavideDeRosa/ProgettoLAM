@@ -97,6 +97,14 @@ class MyAudioActivity : AppCompatActivity() {
                     setDataSource(audioFilePath)
                     prepare()
                     start()
+
+                    findViewById<Button>(R.id.btnPlay).isEnabled = false
+                    findViewById<Button>(R.id.btnPlay).setBackgroundResource(R.color.green_opaque)
+
+                    setOnCompletionListener {
+                        findViewById<Button>(R.id.btnPlay).isEnabled = true
+                        findViewById<Button>(R.id.btnPlay).setBackgroundResource(R.color.green)
+                    }
                 }
             } else {
                 Toast.makeText(this, "Il file audio non esiste", Toast.LENGTH_SHORT).show()
@@ -110,6 +118,9 @@ class MyAudioActivity : AppCompatActivity() {
                 }
                 it.release()
                 mediaPlayer = null
+
+                findViewById<Button>(R.id.btnPlay).isEnabled = true
+                findViewById<Button>(R.id.btnPlay).setBackgroundResource(R.color.green)
             }
         }
 

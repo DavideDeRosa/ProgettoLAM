@@ -17,7 +17,6 @@
             android:layout_height="wrap_content"
             android:text="@string/info_audio"
             android:textAlignment="center"
-            android:textColor="@color/black"
             android:textSize="40sp"
             android:textStyle="bold"
             android:visibility="invisible" />
@@ -97,10 +96,10 @@
                 android:layout_height="55dp"
                 android:layout_margin="8dp"
                 android:layout_weight="1"
-                android:background="@color/grey"
+                android:background="@color/green"
                 android:drawableBottom="@drawable/play_w"
                 android:gravity="center"
-                android:padding="15dp"
+                android:padding="2dp"
                 android:visibility="invisible" />
 
             <Button
@@ -112,7 +111,7 @@
                 android:background="@color/grey"
                 android:drawableTop="@drawable/stop_w"
                 android:gravity="center"
-                android:padding="16dp"
+                android:padding="5dp"
                 android:visibility="invisible" />
 
         </LinearLayout>

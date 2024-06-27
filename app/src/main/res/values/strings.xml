@@ -5,8 +5,8 @@
     <string name="account_information">Questa simpatica app ti permette di registrare audio ovunque tu sia.
         Gli audio verranno caricati sulla piattaforma che darà una serie di statistiche inerenti.
         Potrai inoltre visualizzare i dati delle tue registrazioni e delle registrazioni degli altri utenti.</string>
-    <string name="info_audio">Info audio</string>
-    <string name="i_tuoi_audio">I tuoi audio</string>
+    <string name="info_audio">INFO AUDIO</string>
+    <string name="i_tuoi_audio">I TUOI AUDIO</string>
     <string name="nascondi_audio">Nascondi</string>
     <string name="ottieni_localizzazione">Ottieni localizzazione</string>
     <string name="play">Play</string>
@@ -16,4 +16,5 @@
     <string name="cancella_registrazione">Cancella registrazione</string>
     <string name="conferma_registrazione">Conferma registrazione</string>
     <string name="stop">Stop</string>
+    <string name="registra_nuovo_audio">REGISTRA NUOVO AUDIO</string>
 </resources>

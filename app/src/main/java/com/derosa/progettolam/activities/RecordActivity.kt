@@ -13,6 +13,7 @@ import android.location.LocationManager
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Bundle
+import android.os.Handler
 import android.provider.Settings
 import android.util.Log
 import android.view.View
@@ -47,6 +48,7 @@ class RecordActivity : AppCompatActivity() {
     private lateinit var btnLocal: Button
     private lateinit var txtLocal: TextView
     private lateinit var btnStartRecording: Button
+    private lateinit var txtDuration: TextView
     private lateinit var btnStopRecording: Button
     private lateinit var btnPlay: Button
     private lateinit var btnStop: Button
@@ -64,16 +66,22 @@ class RecordActivity : AppCompatActivity() {
     private var recordedFilePath = ""
     private var mp3FilePath = ""
 
+    private lateinit var handler: Handler
+    private lateinit var runnable: Runnable
+    private var startTime: Long = 0L
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_record)
 
         audioViewModel = ViewModelProvider(this)[AudioViewModel::class.java]
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        handler = Handler()
 
         btnLocal = findViewById(R.id.btnLocal)
         txtLocal = findViewById(R.id.txtLocal)
         btnStartRecording = findViewById(R.id.btnStartRecording)
+        txtDuration = findViewById(R.id.txtDuration)
         btnStopRecording = findViewById(R.id.btnStopRecording)
         btnPlay = findViewById(R.id.btnPlayAudio)
         btnStop = findViewById(R.id.btnStopAudio)
@@ -156,11 +164,25 @@ class RecordActivity : AppCompatActivity() {
                 try {
                     prepare()
                     start()
+
+                    startTime = System.currentTimeMillis()
+                    startTimer()
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
             }
         }
+    }
+
+    private fun startTimer() {
+        runnable = object : Runnable {
+            override fun run() {
+                val elapsedMillis = System.currentTimeMillis() - startTime
+                txtDuration.text = "Durata: " + formatDuration(elapsedMillis)
+                handler.postDelayed(this, 1000)
+            }
+        }
+        handler.post(runnable)
     }
 
     private fun stopRecording() {
@@ -172,6 +194,10 @@ class RecordActivity : AppCompatActivity() {
                 e.printStackTrace()
             }
         }
+
+        handler.removeCallbacks(runnable)
+        val elapsedMillis = System.currentTimeMillis() - startTime
+        txtDuration.text = "Durata: " + formatDuration(elapsedMillis)
 
         val username = DataSingleton.username
         mp3FilePath =
@@ -208,6 +234,18 @@ class RecordActivity : AppCompatActivity() {
         }
     }
 
+    private fun formatDuration(durationInMillis: Long): String {
+        val seconds = (durationInMillis / 1000) % 60
+        val minutes = (durationInMillis / (1000 * 60)) % 60
+        val hours = (durationInMillis / (1000 * 60 * 60)) % 24
+
+        return if (hours > 0) {
+            String.format("%02d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            String.format("%02d:%02d", minutes, seconds)
+        }
+    }
+
     private fun playRecording() {
         val audioFile = File(mp3FilePath)
 
@@ -217,6 +255,14 @@ class RecordActivity : AppCompatActivity() {
                 setDataSource(mp3FilePath)
                 prepare()
                 start()
+
+                btnPlay.isEnabled = false
+                btnPlay.setBackgroundResource(R.color.green_opaque)
+
+                setOnCompletionListener {
+                    btnPlay.isEnabled = true
+                    btnPlay.setBackgroundResource(R.color.green)
+                }
             }
         } else {
             Toast.makeText(this, "Il file audio non esiste", Toast.LENGTH_SHORT).show()
@@ -230,6 +276,9 @@ class RecordActivity : AppCompatActivity() {
             }
             it.release()
             mediaPlayer = null
+
+            btnPlay.isEnabled = true
+            btnPlay.setBackgroundResource(R.color.green)
         }
     }
 
@@ -454,17 +503,23 @@ class RecordActivity : AppCompatActivity() {
     }
 
     private fun showUIAfterLocal() {
-        btnLocal.isEnabled = false // capire se cambiare grafica quando disabilitato!!!
+        btnLocal.isEnabled = false
+        btnLocal.setBackgroundResource(R.color.grey_opaque)
+
         btnStartRecording.visibility = View.VISIBLE
     }
 
     private fun showUIAfterStartRecording() {
-        btnStartRecording.isEnabled = false // capire se cambiare grafica quando disabilitato!!!
+        btnStartRecording.isEnabled = false
+        btnStartRecording.setBackgroundResource(R.color.grey_opaque)
+
         btnStopRecording.visibility = View.VISIBLE
     }
 
     private fun showUIAfterStopRecording() {
-        btnStopRecording.isEnabled = false // capire se cambiare grafica quando disabilitato!!!
+        btnStopRecording.isEnabled = false
+        btnStopRecording.setBackgroundResource(R.color.grey_opaque)
+
         btnPlay.visibility = View.VISIBLE
         btnStop.visibility = View.VISIBLE
         btnDeleteRecording.visibility = View.VISIBLE
