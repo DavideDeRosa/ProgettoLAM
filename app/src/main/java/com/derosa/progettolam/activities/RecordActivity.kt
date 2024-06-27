@@ -2,18 +2,21 @@ package com.derosa.progettolam.activities
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Address
+import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
+import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -36,6 +39,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.File
 import java.io.IOException
+import java.util.Locale
 
 
 class RecordActivity : AppCompatActivity() {
@@ -44,13 +48,10 @@ class RecordActivity : AppCompatActivity() {
     private lateinit var txtLocal: TextView
     private lateinit var btnStartRecording: Button
     private lateinit var btnStopRecording: Button
-    private lateinit var btnPlayPause: Button
+    private lateinit var btnPlay: Button
+    private lateinit var btnStop: Button
     private lateinit var btnDeleteRecording: Button
     private lateinit var btnConfirmRecording: Button
-    private lateinit var tvRecordingTime: TextView
-    private lateinit var tvAudioLength: TextView
-    private lateinit var tvCurrentPosition: TextView
-    private lateinit var seekBar: SeekBar
 
     private lateinit var audioViewModel: AudioViewModel
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -59,27 +60,27 @@ class RecordActivity : AppCompatActivity() {
     private var latitude: Double = 0.0
 
     private var mediaRecorder: MediaRecorder? = null
+    private var mediaPlayer: MediaPlayer? = null
+    private var recordedFilePath = ""
+    private var mp3FilePath = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_record)
 
         audioViewModel = ViewModelProvider(this)[AudioViewModel::class.java]
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         btnLocal = findViewById(R.id.btnLocal)
         txtLocal = findViewById(R.id.txtLocal)
-
         btnStartRecording = findViewById(R.id.btnStartRecording)
         btnStopRecording = findViewById(R.id.btnStopRecording)
-        btnPlayPause = findViewById(R.id.btnPlayPause)
+        btnPlay = findViewById(R.id.btnPlayAudio)
+        btnStop = findViewById(R.id.btnStopAudio)
         btnDeleteRecording = findViewById(R.id.btnDeleteRecording)
         btnConfirmRecording = findViewById(R.id.btnConfirmRecording)
-        tvRecordingTime = findViewById(R.id.tvRecordingTime)
-        tvAudioLength = findViewById(R.id.tvAudioLength)
-        tvCurrentPosition = findViewById(R.id.tvCurrentPosition)
-        seekBar = findViewById(R.id.seekBar)
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        observeUpload()
 
         btnLocal.setOnClickListener {
             if (checkPermission()) {
@@ -98,14 +99,45 @@ class RecordActivity : AppCompatActivity() {
         }
 
         btnStartRecording.setOnClickListener {
-            startRecording()
+            if (checkPermissionAudio()) {
+                startRecording()
+                showUIAfterStartRecording()
+            } else {
+                askPermissionAudio()
+            }
         }
 
         btnStopRecording.setOnClickListener {
             stopRecording()
+            showUIAfterStopRecording()
         }
 
-        requestPermissions()
+        btnPlay.setOnClickListener {
+            playRecording()
+        }
+
+        btnStop.setOnClickListener {
+            stopAudioRecording()
+        }
+
+        btnDeleteRecording.setOnClickListener {
+            showDeleteConfirmationDialog()
+        }
+
+        btnConfirmRecording.setOnClickListener {
+            confirmRecording()
+        }
+    }
+
+    private fun observeUpload() {
+        audioViewModel.observeFileCorrectlyUploadedLiveData().observe(this) {
+            Toast.makeText(this, "Caricamento avvenuto con successo!", Toast.LENGTH_SHORT).show()
+            goToAppActivity()
+        }
+
+        audioViewModel.observeFileCorrectlyUploadedErrorLiveData().observe(this) {
+            Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun startRecording() {
@@ -116,7 +148,11 @@ class RecordActivity : AppCompatActivity() {
                 setAudioSource(MediaRecorder.AudioSource.MIC)
                 setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
                 setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-                setOutputFile(externalCacheDir?.absolutePath + "/" + username + "_" + longitude + "_" + latitude + ".mp4")
+
+                recordedFilePath =
+                    externalCacheDir?.absolutePath + "/" + username + "_" + longitude + "_" + latitude + ".mp4"
+
+                setOutputFile(recordedFilePath)
                 try {
                     prepare()
                     start()
@@ -128,66 +164,143 @@ class RecordActivity : AppCompatActivity() {
     }
 
     private fun stopRecording() {
-        val username = DataSingleton.username
-        val token = DataSingleton.token
-        if (token != null) {
-            val recordedFilePath =
-                externalCacheDir?.absolutePath + "/" + username + "_" + longitude + "_" + latitude + ".mp4"
-            val mp3FilePath =
-                externalCacheDir?.absolutePath + "/" + username + "_" + longitude + "_" + latitude + ".mp3"
-
-            mediaRecorder?.apply {
+        mediaRecorder?.apply {
+            try {
                 stop()
                 release()
-                mediaRecorder = null
+            } catch (e: IOException) {
+                e.printStackTrace()
             }
+        }
 
-            val ffmpegCommand = arrayOf(
-                "-i",
-                recordedFilePath,
-                "-codec:a",
-                "libmp3lame",
-                "-qscale:a",
-                "2",
-                mp3FilePath
-            )
-            val rc = FFmpeg.execute(ffmpegCommand)
+        val username = DataSingleton.username
+        mp3FilePath =
+            externalCacheDir?.absolutePath + "/" + username + "_" + longitude + "_" + latitude + ".mp3"
 
-            if (rc == Config.RETURN_CODE_SUCCESS) {
-                Log.d("FFmpeg", "Conversion to MP3 succeeded.")
-                val mp3File = File(mp3FilePath)
+        val ffmpegCommand = arrayOf(
+            "-i",
+            recordedFilePath,
+            "-codec:a",
+            "libmp3lame",
+            "-qscale:a",
+            "2",
+            mp3FilePath
+        )
+        val rc = FFmpeg.execute(ffmpegCommand)
 
-                if (mp3File.exists() && mp3File.canRead()) {
-                    val requestBody = RequestBody.create(MediaType.parse("audio/mpeg"), mp3File)
-                    val fileUpload =
-                        MultipartBody.Part.createFormData("file", mp3File.name, requestBody)
+        if (rc == Config.RETURN_CODE_SUCCESS) {
+            Log.d("FFmpeg", "Conversion to MP3 succeeded.")
 
-                    audioViewModel.uploadAudio(token, longitude, latitude, fileUpload)
-
-                    val mp4File = File(recordedFilePath)
-                    if (mp4File.exists()) {
-                        val deleted = mp4File.delete()
-                        if (deleted) {
-                            Log.d("File Deletion", "MP4 file deleted successfully.")
-                        } else {
-                            Log.d("File Deletion", "Failed to delete MP4 file.")
-                        }
-                    }
+            val mp4File = File(recordedFilePath)
+            if (mp4File.exists()) {
+                val deleted = mp4File.delete()
+                if (deleted) {
+                    Log.d("File Deletion", "MP4 file deleted successfully.")
                 } else {
-                    Log.d("File Error", "MP3 file does not exist or cannot be read.")
+                    Log.d("File Deletion", "Failed to delete MP4 file.")
                 }
+            }
+        } else {
+            Log.d("FFmpeg", "Conversion to MP3 failed. Return code: $rc")
+
+            Toast.makeText(this, "C'è stato un errore!", Toast.LENGTH_SHORT).show()
+            goToAppActivity()
+        }
+    }
+
+    private fun playRecording() {
+        val audioFile = File(mp3FilePath)
+
+        if (audioFile.exists()) {
+            mediaPlayer = MediaPlayer()
+            mediaPlayer?.apply {
+                setDataSource(mp3FilePath)
+                prepare()
+                start()
+            }
+        } else {
+            Toast.makeText(this, "Il file audio non esiste", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun stopAudioRecording() {
+        mediaPlayer?.let {
+            if (it.isPlaying) {
+                it.stop()
+            }
+            it.release()
+            mediaPlayer = null
+        }
+    }
+
+    private fun showDeleteConfirmationDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Conferma")
+            .setMessage("Sei sicuro di voler cancellare l'audio?")
+            .setPositiveButton("Si") { dialog, which ->
+                deleteRecording()
+                dialog.dismiss()
+            }
+            .setNegativeButton("No") { dialog, which ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun deleteRecording() {
+        val audioFile =
+            File(mp3FilePath)
+
+        if (audioFile.exists()) {
+            val deleted = audioFile.delete()
+            if (deleted) {
+                Log.d("File Deletion", "Audio file deleted successfully.")
             } else {
-                Log.d("FFmpeg", "Conversion to MP3 failed. Return code: $rc")
+                Log.d("File Deletion Error", "Failed to delete Audio file.")
+            }
+        }
+
+        val intent = Intent(this, RecordActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    private fun confirmRecording() {
+        val token = DataSingleton.token
+        if (token != null) {
+            val mp3File = File(mp3FilePath)
+
+            if (mp3File.exists() && mp3File.canRead()) {
+                val requestBody = RequestBody.create(MediaType.parse("audio/mpeg"), mp3File)
+                val fileUpload =
+                    MultipartBody.Part.createFormData("file", mp3File.name, requestBody)
+
+                audioViewModel.uploadAudio(token, longitude, latitude, fileUpload)
+            } else {
+                Log.d("File Error", "MP3 file does not exist or cannot be read.")
+
+                Toast.makeText(this, "C'è stato un errore!", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun requestPermissions() {
-        val permissions = arrayOf(
-            Manifest.permission.RECORD_AUDIO,
+    private fun checkPermissionAudio(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+            this,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun askPermissionAudio() {
+        ActivityCompat.requestPermissions(
+            this, arrayOf(
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ), 0
         )
-        ActivityCompat.requestPermissions(this, permissions, 0)
     }
 
     private fun checkPermission(): Boolean {
@@ -219,8 +332,7 @@ class RecordActivity : AppCompatActivity() {
                 longitude = location.longitude
                 latitude = location.latitude
 
-                txtLocal.text = "Longitudine: " + longitude + " Latitudine: " + latitude
-                showUI()
+                setLocal()
             } else {
                 getCurrentLocation()
             }
@@ -251,8 +363,7 @@ class RecordActivity : AppCompatActivity() {
                 longitude = location.longitude
                 latitude = location.latitude
 
-                txtLocal.text = "Longitudine: " + longitude + " Latitudine: " + latitude
-                showUI()
+                setLocal()
             } else {
                 startLocationUpdates()
             }
@@ -278,8 +389,7 @@ class RecordActivity : AppCompatActivity() {
                         longitude = location.longitude
                         latitude = location.latitude
 
-                        txtLocal.text = "Longitudine: " + longitude + " Latitudine: " + latitude
-                        showUI()
+                        setLocal()
 
                         fusedLocationClient.removeLocationUpdates(this)
                     } else {
@@ -318,26 +428,57 @@ class RecordActivity : AppCompatActivity() {
         }
     }
 
+    private fun setLocal() {
+        txtLocal.text = "Località: " + getLocationName(longitude, latitude)
+        showUIAfterLocal()
+    }
+
+    private fun getLocationName(longitude: Double, latitude: Double): String {
+        val geocoder = Geocoder(this, Locale.getDefault())
+        var locationName = ""
+
+        try {
+            val addresses: List<Address>? = geocoder.getFromLocation(latitude, longitude, 1)
+            if (addresses != null && addresses.isNotEmpty()) {
+                locationName = addresses[0].getAddressLine(0)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return locationName
+    }
+
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
     }
 
-    private fun showUI() { //modificare e gestire bene tutto il ciclo di registrazione dell'audio!
+    private fun showUIAfterLocal() {
+        btnLocal.isEnabled = false // capire se cambiare grafica quando disabilitato!!!
         btnStartRecording.visibility = View.VISIBLE
+    }
+
+    private fun showUIAfterStartRecording() {
+        btnStartRecording.isEnabled = false // capire se cambiare grafica quando disabilitato!!!
         btnStopRecording.visibility = View.VISIBLE
-        btnPlayPause.visibility = View.VISIBLE
+    }
+
+    private fun showUIAfterStopRecording() {
+        btnStopRecording.isEnabled = false // capire se cambiare grafica quando disabilitato!!!
+        btnPlay.visibility = View.VISIBLE
+        btnStop.visibility = View.VISIBLE
         btnDeleteRecording.visibility = View.VISIBLE
         btnConfirmRecording.visibility = View.VISIBLE
-        tvRecordingTime.visibility = View.VISIBLE
-        tvAudioLength.visibility = View.VISIBLE
-        tvCurrentPosition.visibility = View.VISIBLE
-        seekBar.visibility = View.VISIBLE
+    }
+
+    private fun goToAppActivity() {
+        val intent = Intent(this, AppActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 
     override fun onBackPressed() {
         super.onBackPressed()
-        val intent = Intent(this, AppActivity::class.java)
-        startActivity(intent)
-        finish()
+        goToAppActivity()
     }
 }

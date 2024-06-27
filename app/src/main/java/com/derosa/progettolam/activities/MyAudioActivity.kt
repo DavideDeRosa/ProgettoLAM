@@ -103,7 +103,6 @@ class MyAudioActivity : AppCompatActivity() {
             }
         }
 
-
         findViewById<Button>(R.id.btnStop).setOnClickListener {
             mediaPlayer?.let {
                 if (it.isPlaying) {
@@ -200,6 +199,8 @@ class MyAudioActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        super.onBackPressed()
+
         mediaPlayer?.let {
             if (it.isPlaying) {
                 it.stop()
@@ -207,15 +208,16 @@ class MyAudioActivity : AppCompatActivity() {
             it.release()
             mediaPlayer = null
         }
-        super.onBackPressed()
+
         val intent = Intent(this, AppActivity::class.java)
         startActivity(intent)
         finish()
     }
 
     override fun onDestroy() {
+        super.onDestroy()
+
         mediaPlayer?.release()
         mediaPlayer = null
-        super.onDestroy()
     }
 }
