@@ -70,4 +70,7 @@ dependencies {
     //map
     implementation("org.osmdroid:osmdroid-android:6.1.10")
     implementation("org.osmdroid:osmdroid-wms:6.1.10")
+
+    //ffmpeg
+    implementation("com.arthenica:mobile-ffmpeg-full:4.4")
 }

@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.location.Address
 import android.location.Geocoder
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -24,6 +25,7 @@ class MyAudioActivity : AppCompatActivity() {
     private lateinit var audioViewModel: AudioViewModel
     private lateinit var myAudioAdapter: MyAudioAdapter
     private lateinit var audio: AudioMetaData
+    private var mediaPlayer: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +36,7 @@ class MyAudioActivity : AppCompatActivity() {
 
         audioViewModel.observeAudioByIdLiveData().observe(this) {
             audio = it
-            initializeDialog()
+            initialize()
         }
 
         audioViewModel.observeAudioByIdErrorLiveData().observe(this) {
@@ -49,7 +51,7 @@ class MyAudioActivity : AppCompatActivity() {
         }
     }
 
-    private fun initializeDialog() {
+    private fun initialize() {
         findViewById<TextView>(R.id.textIniziale).visibility = View.VISIBLE
 
         findViewById<TextView>(R.id.textLongitude).text = "Longitudine: ${audio.longitude}"
@@ -77,12 +79,28 @@ class MyAudioActivity : AppCompatActivity() {
         observeAll()
 
         findViewById<Button>(R.id.btnPlay).visibility = View.VISIBLE
+        findViewById<Button>(R.id.btnStop).visibility = View.VISIBLE
         findViewById<Button>(R.id.btnDelete).visibility = View.VISIBLE
         findViewById<Button>(R.id.btnHide).visibility = View.VISIBLE
 
         findViewById<Button>(R.id.btnPlay).setOnClickListener {
-            Toast.makeText(this, "magari", Toast.LENGTH_SHORT).show()
-            //TODO
+            val username = DataSingleton.username
+            mediaPlayer = MediaPlayer()
+            mediaPlayer?.apply {
+                setDataSource(externalCacheDir?.absolutePath + "/" + username + "_" + audio.longitude + "_" + audio.latitude + ".mp3")
+                prepare()
+                start()
+            }
+        }
+
+        findViewById<Button>(R.id.btnStop).setOnClickListener {
+            mediaPlayer?.let {
+                if (it.isPlaying) {
+                    it.stop()
+                }
+                it.release()
+                mediaPlayer = null
+            }
         }
 
         findViewById<Button>(R.id.btnHide).setOnClickListener {
@@ -155,9 +173,22 @@ class MyAudioActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        mediaPlayer?.let {
+            if (it.isPlaying) {
+                it.stop()
+            }
+            it.release()
+            mediaPlayer = null
+        }
         super.onBackPressed()
         val intent = Intent(this, AppActivity::class.java)
         startActivity(intent)
         finish()
+    }
+
+    override fun onDestroy() {
+        mediaPlayer?.release()
+        mediaPlayer = null
+        super.onDestroy()
     }
 }

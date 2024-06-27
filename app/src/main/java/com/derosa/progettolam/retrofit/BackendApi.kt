@@ -1,7 +1,7 @@
 package com.derosa.progettolam.retrofit
 
 import com.derosa.progettolam.pojo.User
-import okhttp3.RequestBody
+import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.Body
@@ -11,6 +11,7 @@ import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
+import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
@@ -33,12 +34,13 @@ interface BackendApi {
     fun authUnsubscribe(@Header("Authorization") token: String): Call<ResponseBody>
 
     @POST("upload")
+    @Multipart
     fun uploadAudio(
         @Header("Authorization") token: String,
         @Query("longitude") longitude: Double,
         @Query("latitude") latitude: Double,
-        @Part audio: RequestBody
-    ): Call<ResponseBody> //da testare
+        @Part audio: MultipartBody.Part
+    ): Call<ResponseBody>
 
     @GET("audio/my")
     fun myAudio(@Header("Authorization") token: String): Call<ResponseBody>

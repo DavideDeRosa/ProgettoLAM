@@ -8,7 +8,12 @@
     <string name="info_audio">Info audio</string>
     <string name="i_tuoi_audio">I tuoi audio</string>
     <string name="nascondi_audio">Nascondi</string>
-    <string name="mostra_audio">Mostra</string>
+    <string name="ottieni_localizzazione">Ottieni localizzazione</string>
     <string name="play">Play</string>
     <string name="cancella_audio">Cancella</string>
+    <string name="avvia_registrazione">Avvia registrazione</string>
+    <string name="interrompi_registrazione">Interrompi registrazione</string>
+    <string name="cancella_registrazione">Cancella registrazione</string>
+    <string name="conferma_registrazione">Conferma registrazione</string>
+    <string name="stop">Stop</string>
 </resources>

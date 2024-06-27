@@ -33,10 +33,6 @@ data class MyAudio(
     var hidden: Boolean
 )
 
-data class FileCorrectlyUploaded(
-    var detail: String
-)
-
 data class FileTooBig(
     var detail: String
 )

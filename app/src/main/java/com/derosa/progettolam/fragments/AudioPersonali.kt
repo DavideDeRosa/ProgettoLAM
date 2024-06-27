@@ -11,9 +11,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.derosa.progettolam.R
+import com.derosa.progettolam.activities.LoginActivity
 import com.derosa.progettolam.activities.MyAudioActivity
 import com.derosa.progettolam.activities.RecordActivity
 import com.derosa.progettolam.adapters.MyAudioAdapter
+import com.derosa.progettolam.adapters.SpacingItemDecoration
 import com.derosa.progettolam.databinding.FragmentAudioPersonaliBinding
 import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.viewmodel.AudioViewModel
@@ -40,6 +42,7 @@ class AudioPersonali : Fragment() {
         binding.recyclerView.layoutManager = LinearLayoutManager(activity)
         myAudioAdapter = MyAudioAdapter(context)
         binding.recyclerView.adapter = myAudioAdapter
+        binding.recyclerView.addItemDecoration(SpacingItemDecoration(20))
 
         return binding.root
     }
@@ -53,6 +56,7 @@ class AudioPersonali : Fragment() {
 
         audioViewModel.observeAudioMyErrorLiveData().observe(viewLifecycleOwner) {
             Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
+            goToLogin()
         }
 
         audioViewModel.observeAudioShowLiveData().observe(viewLifecycleOwner) {
@@ -64,6 +68,7 @@ class AudioPersonali : Fragment() {
 
         audioViewModel.observeAudioShowErrorLiveData().observe(viewLifecycleOwner) {
             Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
+            goToLogin()
         }
 
         val token = DataSingleton.token
@@ -110,5 +115,14 @@ class AudioPersonali : Fragment() {
                 dialog.dismiss()
             }
             .show()
+    }
+
+    private fun goToLogin() {
+        DataSingleton.token = null
+        DataSingleton.username = null
+
+        val intent = Intent(activity, LoginActivity::class.java)
+        startActivity(intent)
+        activity?.finish()
     }
 }

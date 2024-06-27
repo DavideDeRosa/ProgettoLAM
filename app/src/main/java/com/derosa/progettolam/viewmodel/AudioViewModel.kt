@@ -11,15 +11,15 @@ import com.derosa.progettolam.pojo.AudioNotFound
 import com.derosa.progettolam.pojo.AudioSuccessfullyDeleted
 import com.derosa.progettolam.pojo.AudioSuccessfullyHidden
 import com.derosa.progettolam.pojo.AudioSuccessfullyShown
-import com.derosa.progettolam.pojo.FileCorrectlyUploaded
 import com.derosa.progettolam.pojo.FileNotAudio
 import com.derosa.progettolam.pojo.FileTooBig
 import com.derosa.progettolam.pojo.MyAudio
+import com.derosa.progettolam.pojo.UploadData
 import com.derosa.progettolam.pojo.UserNotAuthorized
 import com.derosa.progettolam.retrofit.RetrofitInstance
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import okhttp3.RequestBody
+import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -30,7 +30,7 @@ class AudioViewModel : ViewModel() {
     val gson = Gson()
 
     //LiveData /upload
-    private var fileCorrectlyUploadedLiveData = MutableLiveData<FileCorrectlyUploaded>()
+    private var fileCorrectlyUploadedLiveData = MutableLiveData<UploadData>()
     private var fileCorrectlyUploadedErrorLiveData = MutableLiveData<String>()
 
     //LiveData /audio/my
@@ -57,7 +57,7 @@ class AudioViewModel : ViewModel() {
     private var audioDeleteLiveData = MutableLiveData<AudioSuccessfullyDeleted>()
     private var audioDeleteErrorLiveData = MutableLiveData<String>()
 
-    fun uploadAudio(token: String, longitude: Double, latitude: Double, audio: RequestBody) {
+    fun uploadAudio(token: String, longitude: Double, latitude: Double, audio: MultipartBody.Part) {
         RetrofitInstance.api.uploadAudio(token, longitude, latitude, audio)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(
@@ -65,7 +65,18 @@ class AudioViewModel : ViewModel() {
                     response: Response<ResponseBody>
                 ) {
                     if (response.isSuccessful) {
-                        //DA FARE QUANDO SAPRO LA STRUTTURA DEL JSON CHE MI ARRIVA CON I METADATI
+                        val uploadData =
+                            gson.fromJson(
+                                response.body()!!.string(),
+                                UploadData::class.java
+                            )
+
+                        Log.d(
+                            "UploadAudio 200",
+                            "UploadAudio 200: " + uploadData.toString()
+                        )
+
+                        fileCorrectlyUploadedLiveData.value = uploadData
                     } else {
                         when (response.code()) {
                             401 -> {
@@ -121,7 +132,7 @@ class AudioViewModel : ViewModel() {
             })
     }
 
-    fun observeFileCorrectlyUploadedLiveData(): LiveData<FileCorrectlyUploaded> {
+    fun observeFileCorrectlyUploadedLiveData(): LiveData<UploadData> {
         return fileCorrectlyUploadedLiveData
     }
 

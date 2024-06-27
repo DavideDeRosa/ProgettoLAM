@@ -20,7 +20,7 @@
             android:textColor="@color/black"
             android:textSize="40sp"
             android:textStyle="bold"
-            android:visibility="gone" />
+            android:visibility="invisible" />
 
         <TextView
             android:id="@+id/textCreatorUsername"
@@ -97,13 +97,23 @@
                 android:layout_height="55dp"
                 android:layout_margin="8dp"
                 android:layout_weight="1"
-                android:background="@color/lightgrey"
-                android:padding="10dp"
-                android:text="@string/play"
-                android:textColor="@color/white"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:visibility="gone" />
+                android:background="@color/grey"
+                android:drawableBottom="@drawable/play_w"
+                android:gravity="center"
+                android:padding="15dp"
+                android:visibility="invisible" />
+
+            <Button
+                android:id="@+id/btnStop"
+                android:layout_width="0dp"
+                android:layout_height="55dp"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@color/grey"
+                android:drawableTop="@drawable/stop_w"
+                android:gravity="center"
+                android:padding="16dp"
+                android:visibility="invisible" />
 
         </LinearLayout>
 
@@ -126,7 +136,7 @@
                 android:text="@string/nascondi_audio"
                 android:textColor="@color/white"
                 android:textSize="13sp"
-                android:visibility="gone" />
+                android:visibility="invisible" />
 
             <Button
                 android:id="@+id/btnDelete"
@@ -139,7 +149,7 @@
                 android:text="@string/cancella_audio"
                 android:textColor="@color/white"
                 android:textSize="13sp"
-                android:visibility="gone" />
+                android:visibility="invisible" />
         </LinearLayout>
 
     </LinearLayout>
