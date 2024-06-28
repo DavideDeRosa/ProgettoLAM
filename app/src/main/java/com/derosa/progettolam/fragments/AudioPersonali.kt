@@ -18,6 +18,7 @@ import com.derosa.progettolam.adapters.MyAudioAdapter
 import com.derosa.progettolam.adapters.SpacingItemDecoration
 import com.derosa.progettolam.databinding.FragmentAudioPersonaliBinding
 import com.derosa.progettolam.util.DataSingleton
+import com.derosa.progettolam.util.SharedPrefUtil
 import com.derosa.progettolam.viewmodel.AudioViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -120,6 +121,8 @@ class AudioPersonali : Fragment() {
     private fun goToLogin() {
         DataSingleton.token = null
         DataSingleton.username = null
+
+        SharedPrefUtil.clearTokenAndUsername(requireContext())
 
         val intent = Intent(activity, LoginActivity::class.java)
         startActivity(intent)

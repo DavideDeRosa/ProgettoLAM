@@ -17,6 +17,7 @@ import com.derosa.progettolam.R
 import com.derosa.progettolam.adapters.MyAudioAdapter
 import com.derosa.progettolam.pojo.AudioMetaData
 import com.derosa.progettolam.util.DataSingleton
+import com.derosa.progettolam.util.SharedPrefUtil
 import com.derosa.progettolam.viewmodel.AudioViewModel
 import java.io.File
 import java.io.IOException
@@ -43,6 +44,7 @@ class MyAudioActivity : AppCompatActivity() {
 
         audioViewModel.observeAudioByIdErrorLiveData().observe(this) {
             Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+            goToLogin()
         }
 
         val id = intent.getIntExtra("audio_id", 0)
@@ -149,6 +151,7 @@ class MyAudioActivity : AppCompatActivity() {
 
         audioViewModel.observeAudioHideErrorLiveData().observe(this) {
             Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+            goToLogin()
         }
 
         audioViewModel.observeAudioDeleteLiveData().observe(this) {
@@ -160,6 +163,7 @@ class MyAudioActivity : AppCompatActivity() {
 
         audioViewModel.observeAudioDeleteErrorLiveData().observe(this) {
             Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+            goToLogin()
         }
     }
 
@@ -207,6 +211,17 @@ class MyAudioActivity : AppCompatActivity() {
         }
 
         return locationName
+    }
+
+    private fun goToLogin() {
+        DataSingleton.token = null
+        DataSingleton.username = null
+
+        SharedPrefUtil.clearTokenAndUsername(this)
+
+        val intent = Intent(this, LoginActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 
     override fun onBackPressed() {

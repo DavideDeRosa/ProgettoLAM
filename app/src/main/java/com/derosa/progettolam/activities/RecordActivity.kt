@@ -28,6 +28,7 @@ import com.arthenica.mobileffmpeg.Config
 import com.arthenica.mobileffmpeg.FFmpeg
 import com.derosa.progettolam.R
 import com.derosa.progettolam.util.DataSingleton
+import com.derosa.progettolam.util.SharedPrefUtil
 import com.derosa.progettolam.viewmodel.AudioViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
@@ -145,6 +146,8 @@ class RecordActivity : AppCompatActivity() {
 
         audioViewModel.observeFileCorrectlyUploadedErrorLiveData().observe(this) {
             Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+            deleteRecording()
+            goToLogin()
         }
     }
 
@@ -528,6 +531,17 @@ class RecordActivity : AppCompatActivity() {
 
     private fun goToAppActivity() {
         val intent = Intent(this, AppActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    private fun goToLogin() {
+        DataSingleton.token = null
+        DataSingleton.username = null
+
+        SharedPrefUtil.clearTokenAndUsername(this)
+
+        val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)
         finish()
     }

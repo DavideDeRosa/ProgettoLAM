@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
 import com.derosa.progettolam.activities.LoginActivity
 import com.derosa.progettolam.util.DataSingleton
+import com.derosa.progettolam.util.SharedPrefUtil
 import com.derosa.progettolam.viewmodel.UserViewModel
 
 
@@ -84,6 +85,8 @@ class Account : Fragment() {
     private fun goToLogin() {
         DataSingleton.token = null
         DataSingleton.username = null
+
+        SharedPrefUtil.clearTokenAndUsername(requireContext())
 
         val intent = Intent(activity, LoginActivity::class.java)
         startActivity(intent)
