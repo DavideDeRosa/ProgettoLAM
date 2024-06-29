@@ -17,4 +17,5 @@
     <string name="conferma_registrazione">Conferma registrazione</string>
     <string name="stop">Stop</string>
     <string name="registra_nuovo_audio">REGISTRA NUOVO AUDIO</string>
+    <string name="offline_msg">Sei in modalità Offline.\nRiavvia l\'app una volta stabilita una connessione ad internet stabile!</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.derosa.progettolam.fragments
 
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -18,7 +19,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
 import com.derosa.progettolam.activities.LoginActivity
 import com.derosa.progettolam.util.DataSingleton
-import com.derosa.progettolam.util.SharedPrefUtil
+import com.derosa.progettolam.util.ExtraUtil
 import com.derosa.progettolam.viewmodel.UserViewModel
 
 
@@ -43,42 +44,54 @@ class Account : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val btnUnsub = view.findViewById<Button>(R.id.btnUnsub)
-        val btnLogout = view.findViewById<Button>(R.id.btnLogout)
-        val txtUsername = view.findViewById<TextView>(R.id.txtUsername)
+        val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val isNetworkAvailable = sharedPref.getBoolean("network_state", false)
 
-        val fullText = "Ciao, ${DataSingleton.username}!"
-        val spannableString = SpannableString(fullText)
-        spannableString.setSpan(
-            ForegroundColorSpan(Color.RED),
-            "Ciao, ".length,
-            fullText.length - 1,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
+        if (!isNetworkAvailable) {
+            view.findViewById<TextView>(R.id.txtOfflineAccount).visibility = View.VISIBLE
+            view.findViewById<TextView>(R.id.txtUsername).visibility = View.GONE
+            view.findViewById<TextView>(R.id.txtDescrizioneAccount).visibility = View.GONE
+            view.findViewById<Button>(R.id.btnLogout).visibility = View.GONE
+            view.findViewById<Button>(R.id.btnUnsub).visibility = View.GONE
+        } else {
 
-        txtUsername.text = spannableString
+            val btnUnsub = view.findViewById<Button>(R.id.btnUnsub)
+            val btnLogout = view.findViewById<Button>(R.id.btnLogout)
+            val txtUsername = view.findViewById<TextView>(R.id.txtUsername)
 
-        btnUnsub.setOnClickListener {
-            val token = DataSingleton.token
-            if (token != null) {
-                showUnsubscribeConfirmationDialog(token)
-            } else {
+            val fullText = "Ciao, ${DataSingleton.username}!"
+            val spannableString = SpannableString(fullText)
+            spannableString.setSpan(
+                ForegroundColorSpan(Color.RED),
+                "Ciao, ".length,
+                fullText.length - 1,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+
+            txtUsername.text = spannableString
+
+            btnUnsub.setOnClickListener {
+                val token = DataSingleton.token
+                if (token != null) {
+                    showUnsubscribeConfirmationDialog(token)
+                } else {
+                    goToLogin()
+                }
+            }
+
+            btnLogout.setOnClickListener {
                 goToLogin()
             }
-        }
 
-        btnLogout.setOnClickListener {
-            goToLogin()
-        }
+            userViewModel.observeUserCorrectlyRemovedLiveData().observe(viewLifecycleOwner) {
+                Toast.makeText(activity, it.detail, Toast.LENGTH_SHORT).show()
+                goToLogin()
+            }
 
-        userViewModel.observeUserCorrectlyRemovedLiveData().observe(viewLifecycleOwner) {
-            Toast.makeText(activity, it.detail, Toast.LENGTH_SHORT).show()
-            goToLogin()
-        }
-
-        userViewModel.observeUserCorrectlyRemovedErrorLiveData().observe(viewLifecycleOwner) {
-            Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
-            goToLogin()
+            userViewModel.observeUserCorrectlyRemovedErrorLiveData().observe(viewLifecycleOwner) {
+                Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
+                goToLogin()
+            }
         }
     }
 
@@ -86,7 +99,7 @@ class Account : Fragment() {
         DataSingleton.token = null
         DataSingleton.username = null
 
-        SharedPrefUtil.clearTokenAndUsername(requireContext())
+        ExtraUtil.clearTokenAndUsername(requireContext())
 
         val intent = Intent(activity, LoginActivity::class.java)
         startActivity(intent)

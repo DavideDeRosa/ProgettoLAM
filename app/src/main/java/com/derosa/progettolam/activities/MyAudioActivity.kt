@@ -1,6 +1,7 @@
 package com.derosa.progettolam.activities
 
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.location.Address
 import android.location.Geocoder
@@ -17,7 +18,7 @@ import com.derosa.progettolam.R
 import com.derosa.progettolam.adapters.MyAudioAdapter
 import com.derosa.progettolam.pojo.AudioMetaData
 import com.derosa.progettolam.util.DataSingleton
-import com.derosa.progettolam.util.SharedPrefUtil
+import com.derosa.progettolam.util.ExtraUtil
 import com.derosa.progettolam.viewmodel.AudioViewModel
 import java.io.File
 import java.io.IOException
@@ -33,6 +34,16 @@ class MyAudioActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_audio)
+
+        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val isNetworkAvailable = sharedPref.getBoolean("network_state", false)
+
+        if (!isNetworkAvailable) {
+
+            //di una cosa sono certo
+            findViewById<Button>(R.id.btnDelete).visibility = View.GONE
+            findViewById<Button>(R.id.btnHide).visibility = View.GONE
+        }
 
         audioViewModel = ViewModelProvider(this)[AudioViewModel::class.java]
         myAudioAdapter = MyAudioAdapter(this)
@@ -217,7 +228,7 @@ class MyAudioActivity : AppCompatActivity() {
         DataSingleton.token = null
         DataSingleton.username = null
 
-        SharedPrefUtil.clearTokenAndUsername(this)
+        ExtraUtil.clearTokenAndUsername(this)
 
         val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)

@@ -12,6 +12,7 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -21,7 +22,7 @@ import com.derosa.progettolam.R
 import com.derosa.progettolam.activities.LoginActivity
 import com.derosa.progettolam.dialogs.AudioMetadataDialog
 import com.derosa.progettolam.util.DataSingleton
-import com.derosa.progettolam.util.SharedPrefUtil
+import com.derosa.progettolam.util.ExtraUtil
 import com.derosa.progettolam.viewmodel.AudioViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
@@ -41,12 +42,16 @@ class Mappa : Fragment() {
     private lateinit var map: MapView
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var audioViewModel: AudioViewModel
+    private var isNetworkAvailable = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         audioViewModel = ViewModelProvider(this)[AudioViewModel::class.java]
+
+        val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        isNetworkAvailable = sharedPref.getBoolean("network_state", false)
 
         val token = DataSingleton.token
         if (token != null) {
@@ -63,66 +68,74 @@ class Mappa : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        map = view.findViewById(R.id.map)
-        map.setMultiTouchControls(true)
 
-        val startingPoint = GeoPoint(41.8719, 12.5674) //Italy as a starting point
-        map.controller.setZoom(7.0)
-        map.controller.setCenter(startingPoint)
+        if (!isNetworkAvailable) {
+            view.findViewById<TextView>(R.id.txtOfflineMappa).visibility = View.VISIBLE
+            view.findViewById<MapView>(R.id.map).visibility = View.GONE
+            view.findViewById<FloatingActionButton>(R.id.myLocation).visibility = View.GONE
+        } else {
+            map = view.findViewById(R.id.map)
+            map.setMultiTouchControls(true)
 
-        audioViewModel.observeAllAudioLiveData().observe(viewLifecycleOwner) {
-            for (audio in it) {
-                val marker = Marker(map)
-                val position = GeoPoint(audio.latitude, audio.longitude)
-                marker.position = position
-                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                marker.icon = ContextCompat.getDrawable(requireContext(), R.drawable.maps_marker)
-                map.overlays.add(marker)
+            val startingPoint = GeoPoint(41.8719, 12.5674) //Italy as a starting point
+            map.controller.setZoom(7.0)
+            map.controller.setCenter(startingPoint)
 
-                marker.setOnMarkerClickListener(object : Marker.OnMarkerClickListener {
-                    override fun onMarkerClick(marker: Marker, mapView: MapView): Boolean {
-                        val token = DataSingleton.token
-                        if (token != null) {
-                            audioViewModel.getAudioById(token, audio.id)
+            audioViewModel.observeAllAudioLiveData().observe(viewLifecycleOwner) {
+                for (audio in it) {
+                    val marker = Marker(map)
+                    val position = GeoPoint(audio.latitude, audio.longitude)
+                    marker.position = position
+                    marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                    marker.icon =
+                        ContextCompat.getDrawable(requireContext(), R.drawable.maps_marker)
+                    map.overlays.add(marker)
+
+                    marker.setOnMarkerClickListener(object : Marker.OnMarkerClickListener {
+                        override fun onMarkerClick(marker: Marker, mapView: MapView): Boolean {
+                            val token = DataSingleton.token
+                            if (token != null) {
+                                audioViewModel.getAudioById(token, audio.id)
+                            }
+                            return true
                         }
-                        return true
-                    }
-                })
-            }
-        }
-
-        audioViewModel.observeAllAudioErrorLiveData().observe(viewLifecycleOwner) {
-            Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
-            goToLogin()
-        }
-
-        audioViewModel.observeAudioByIdLiveData().observe(viewLifecycleOwner) {
-            val customDialog = AudioMetadataDialog(it)
-            customDialog.show(parentFragmentManager, "AudioMetaDataDialog")
-        }
-
-        audioViewModel.observeAudioByIdErrorLiveData().observe(viewLifecycleOwner) {
-            Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
-            goToLogin()
-        }
-
-        val fabMyLocation: FloatingActionButton = view.findViewById(R.id.myLocation)
-        fabMyLocation.setOnClickListener {
-            if (checkPermission()) {
-                if (isLocationEnabled()) {
-                    getLastLocation()
-                } else {
-                    Toast.makeText(
-                        context,
-                        "Abilita i servizi di localizzazione",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                    startActivity(intent)
+                    })
                 }
-            } else {
-                askPermission()
+            }
+
+            audioViewModel.observeAllAudioErrorLiveData().observe(viewLifecycleOwner) {
+                Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
+                goToLogin()
+            }
+
+            audioViewModel.observeAudioByIdLiveData().observe(viewLifecycleOwner) {
+                val customDialog = AudioMetadataDialog(it)
+                customDialog.show(parentFragmentManager, "AudioMetaDataDialog")
+            }
+
+            audioViewModel.observeAudioByIdErrorLiveData().observe(viewLifecycleOwner) {
+                Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
+                goToLogin()
+            }
+
+            val fabMyLocation: FloatingActionButton = view.findViewById(R.id.myLocation)
+            fabMyLocation.setOnClickListener {
+                if (checkPermission()) {
+                    if (isLocationEnabled()) {
+                        getLastLocation()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Abilita i servizi di localizzazione",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                        startActivity(intent)
+                    }
+                } else {
+                    askPermission()
+                }
             }
         }
     }
@@ -257,19 +270,23 @@ class Mappa : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        map.onResume()
+        if(isNetworkAvailable){
+            map.onResume()
+        }
     }
 
     override fun onPause() {
         super.onPause()
-        map.onPause()
+        if(isNetworkAvailable){
+            map.onPause()
+        }
     }
 
     private fun goToLogin() {
         DataSingleton.token = null
         DataSingleton.username = null
 
-        SharedPrefUtil.clearTokenAndUsername(requireContext())
+        ExtraUtil.clearTokenAndUsername(requireContext())
 
         val intent = Intent(activity, LoginActivity::class.java)
         startActivity(intent)

@@ -28,7 +28,7 @@ import com.arthenica.mobileffmpeg.Config
 import com.arthenica.mobileffmpeg.FFmpeg
 import com.derosa.progettolam.R
 import com.derosa.progettolam.util.DataSingleton
-import com.derosa.progettolam.util.SharedPrefUtil
+import com.derosa.progettolam.util.ExtraUtil
 import com.derosa.progettolam.viewmodel.AudioViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
@@ -539,7 +539,7 @@ class RecordActivity : AppCompatActivity() {
         DataSingleton.token = null
         DataSingleton.username = null
 
-        SharedPrefUtil.clearTokenAndUsername(this)
+        ExtraUtil.clearTokenAndUsername(this)
 
         val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)

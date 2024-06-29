@@ -1,6 +1,7 @@
 package com.derosa.progettolam.fragments
 
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -18,7 +19,7 @@ import com.derosa.progettolam.adapters.MyAudioAdapter
 import com.derosa.progettolam.adapters.SpacingItemDecoration
 import com.derosa.progettolam.databinding.FragmentAudioPersonaliBinding
 import com.derosa.progettolam.util.DataSingleton
-import com.derosa.progettolam.util.SharedPrefUtil
+import com.derosa.progettolam.util.ExtraUtil
 import com.derosa.progettolam.viewmodel.AudioViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -51,39 +52,46 @@ class AudioPersonali : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        audioViewModel.observeAudioMyLiveData().observe(viewLifecycleOwner) {
-            myAudioAdapter.setMyAudioList(ArrayList(it))
-        }
+        val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val isNetworkAvailable = sharedPref.getBoolean("network_state", false)
 
-        audioViewModel.observeAudioMyErrorLiveData().observe(viewLifecycleOwner) {
-            Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
-            goToLogin()
-        }
+        if (!isNetworkAvailable) {
+            Toast.makeText(activity, "non sei connesso", Toast.LENGTH_SHORT).show()
+        } else {
+            audioViewModel.observeAudioMyLiveData().observe(viewLifecycleOwner) {
+                myAudioAdapter.setMyAudioList(ArrayList(it))
+            }
 
-        audioViewModel.observeAudioShowLiveData().observe(viewLifecycleOwner) {
-            val intent = Intent(activity, MyAudioActivity::class.java)
-            intent.putExtra("audio_id", audio_id)
-            startActivity(intent)
-            activity?.finish()
-        }
+            audioViewModel.observeAudioMyErrorLiveData().observe(viewLifecycleOwner) {
+                Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
+                goToLogin()
+            }
 
-        audioViewModel.observeAudioShowErrorLiveData().observe(viewLifecycleOwner) {
-            Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
-            goToLogin()
-        }
+            audioViewModel.observeAudioShowLiveData().observe(viewLifecycleOwner) {
+                val intent = Intent(activity, MyAudioActivity::class.java)
+                intent.putExtra("audio_id", audio_id)
+                startActivity(intent)
+                activity?.finish()
+            }
 
-        val token = DataSingleton.token
-        if (token != null) {
-            audioViewModel.myAudio(token)
-        }
+            audioViewModel.observeAudioShowErrorLiveData().observe(viewLifecycleOwner) {
+                Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
+                goToLogin()
+            }
 
-        onMyAudioClick()
+            val token = DataSingleton.token
+            if (token != null) {
+                audioViewModel.myAudio(token)
+            }
 
-        val btnAddAudio = view.findViewById<FloatingActionButton>(R.id.addAudio)
-        btnAddAudio.setOnClickListener {
-            val intent = Intent(activity, RecordActivity::class.java)
-            startActivity(intent)
-            activity?.finish()
+            onMyAudioClick()
+
+            val btnAddAudio = view.findViewById<FloatingActionButton>(R.id.addAudio)
+            btnAddAudio.setOnClickListener {
+                val intent = Intent(activity, RecordActivity::class.java)
+                startActivity(intent)
+                activity?.finish()
+            }
         }
     }
 
@@ -122,7 +130,7 @@ class AudioPersonali : Fragment() {
         DataSingleton.token = null
         DataSingleton.username = null
 
-        SharedPrefUtil.clearTokenAndUsername(requireContext())
+        ExtraUtil.clearTokenAndUsername(requireContext())
 
         val intent = Intent(activity, LoginActivity::class.java)
         startActivity(intent)
