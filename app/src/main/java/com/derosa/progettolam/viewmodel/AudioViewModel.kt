@@ -5,6 +5,9 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.derosa.progettolam.db.AudioDataDatabase
+import com.derosa.progettolam.db.AudioDataEntity
 import com.derosa.progettolam.pojo.AudioAllData
 import com.derosa.progettolam.pojo.AudioMetaData
 import com.derosa.progettolam.pojo.AudioNotFound
@@ -19,13 +22,14 @@ import com.derosa.progettolam.pojo.UserNotAuthorized
 import com.derosa.progettolam.retrofit.RetrofitInstance
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class AudioViewModel : ViewModel() {
+class AudioViewModel(val audioDataDatabase: AudioDataDatabase) : ViewModel() {
 
     val gson = Gson()
 
@@ -475,5 +479,17 @@ class AudioViewModel : ViewModel() {
 
     fun observeAudioDeleteErrorLiveData(): LiveData<String> {
         return audioDeleteErrorLiveData
+    }
+
+    fun insertMyAudio(audio: AudioDataEntity){
+        viewModelScope.launch {
+            audioDataDatabase.audioDataDao().insertMyAudio(audio)
+        }
+    }
+
+    fun deleteMyAudio(audio: AudioDataEntity){
+        viewModelScope.launch {
+            audioDataDatabase.audioDataDao().deleteMyAudio(audio)
+        }
     }
 }

@@ -17,8 +17,8 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
+import com.derosa.progettolam.activities.AppActivity
 import com.derosa.progettolam.activities.LoginActivity
 import com.derosa.progettolam.dialogs.AudioMetadataDialog
 import com.derosa.progettolam.util.DataSingleton
@@ -48,7 +48,8 @@ class Mappa : Fragment() {
         super.onCreate(savedInstanceState)
         Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-        audioViewModel = ViewModelProvider(this)[AudioViewModel::class.java]
+
+        audioViewModel = (activity as AppActivity).audioViewModel
 
         val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         isNetworkAvailable = sharedPref.getBoolean("network_state", false)

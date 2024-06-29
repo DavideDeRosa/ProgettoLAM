@@ -15,11 +15,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
-import com.derosa.progettolam.adapters.MyAudioAdapter
+import com.derosa.progettolam.db.AudioDataDatabase
 import com.derosa.progettolam.pojo.AudioMetaData
 import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.util.ExtraUtil
 import com.derosa.progettolam.viewmodel.AudioViewModel
+import com.derosa.progettolam.viewmodel.AudioViewModelFactory
 import java.io.File
 import java.io.IOException
 import java.util.Locale
@@ -27,7 +28,6 @@ import java.util.Locale
 class MyAudioActivity : AppCompatActivity() {
 
     private lateinit var audioViewModel: AudioViewModel
-    private lateinit var myAudioAdapter: MyAudioAdapter
     private lateinit var audio: AudioMetaData
     private var mediaPlayer: MediaPlayer? = null
 
@@ -40,13 +40,16 @@ class MyAudioActivity : AppCompatActivity() {
 
         if (!isNetworkAvailable) {
 
+
+
             //di una cosa sono certo
             findViewById<Button>(R.id.btnDelete).visibility = View.GONE
             findViewById<Button>(R.id.btnHide).visibility = View.GONE
         }
 
-        audioViewModel = ViewModelProvider(this)[AudioViewModel::class.java]
-        myAudioAdapter = MyAudioAdapter(this)
+        val audioDataDatabase = AudioDataDatabase.getInstance(this)
+        val viewModelFactory = AudioViewModelFactory(audioDataDatabase)
+        audioViewModel = ViewModelProvider(this, viewModelFactory)[AudioViewModel::class.java]
 
         audioViewModel.observeAudioByIdLiveData().observe(this) {
             audio = it

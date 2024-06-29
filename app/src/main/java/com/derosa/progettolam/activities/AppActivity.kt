@@ -2,12 +2,22 @@ package com.derosa.progettolam.activities
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
 import com.derosa.progettolam.R
+import com.derosa.progettolam.db.AudioDataDatabase
+import com.derosa.progettolam.viewmodel.AudioViewModel
+import com.derosa.progettolam.viewmodel.AudioViewModelFactory
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class AppActivity : AppCompatActivity() {
+
+    val audioViewModel by lazy {
+        val audioDataDatabase = AudioDataDatabase.getInstance(this)
+        val viewModelFactory = AudioViewModelFactory(audioDataDatabase)
+        ViewModelProvider(this, viewModelFactory)[AudioViewModel::class.java]
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

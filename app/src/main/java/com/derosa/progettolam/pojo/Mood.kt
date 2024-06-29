@@ -1,5 +1,7 @@
 package com.derosa.progettolam.pojo
 
+import kotlin.reflect.KProperty
+
 data class Mood(
     val action: Double,
     val adventure: Double,
@@ -57,4 +59,23 @@ data class Mood(
     val travel: Double,
     val upbeat: Double,
     val uplifting: Double
-)
+) {
+    fun getMaxMood(): Pair<String, Double> {
+        return getMax()
+    }
+
+    private fun getMax(): Pair<String, Double> {
+        var maxKey = ""
+        var maxValue = Double.MIN_VALUE
+        this::class.members.forEach { member ->
+            if (member is KProperty<*>) {
+                val value = member.call(this) as? Double ?: return@forEach
+                if (value > maxValue) {
+                    maxValue = value
+                    maxKey = member.name
+                }
+            }
+        }
+        return Pair(maxKey, maxValue)
+    }
+}

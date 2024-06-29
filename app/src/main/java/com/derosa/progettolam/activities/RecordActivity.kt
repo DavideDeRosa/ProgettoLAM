@@ -27,9 +27,12 @@ import androidx.lifecycle.ViewModelProvider
 import com.arthenica.mobileffmpeg.Config
 import com.arthenica.mobileffmpeg.FFmpeg
 import com.derosa.progettolam.R
+import com.derosa.progettolam.db.AudioDataDatabase
+import com.derosa.progettolam.db.AudioDataEntity
 import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.util.ExtraUtil
 import com.derosa.progettolam.viewmodel.AudioViewModel
+import com.derosa.progettolam.viewmodel.AudioViewModelFactory
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -75,7 +78,10 @@ class RecordActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_record)
 
-        audioViewModel = ViewModelProvider(this)[AudioViewModel::class.java]
+        val audioDataDatabase = AudioDataDatabase.getInstance(this)
+        val viewModelFactory = AudioViewModelFactory(audioDataDatabase)
+        audioViewModel = ViewModelProvider(this, viewModelFactory)[AudioViewModel::class.java]
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         handler = Handler()
 
@@ -141,6 +147,20 @@ class RecordActivity : AppCompatActivity() {
     private fun observeUpload() {
         audioViewModel.observeFileCorrectlyUploadedLiveData().observe(this) {
             Toast.makeText(this, "Caricamento avvenuto con successo!", Toast.LENGTH_SHORT).show()
+
+            audioViewModel.insertMyAudio(
+                AudioDataEntity(
+                    longitude = longitude,
+                    latitude = latitude,
+                    bpm = it.bpm,
+                    danceability = it.danceability,
+                    loudness = it.loudness,
+                    genre = it.genre.getMaxGenre().first,
+                    mood = it.mood.getMaxMood().first,
+                    instrument = it.instrument.getMaxInstrument().first
+                )
+            )
+
             goToAppActivity()
         }
 

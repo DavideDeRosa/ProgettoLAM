@@ -9,9 +9,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.derosa.progettolam.R
+import com.derosa.progettolam.activities.AppActivity
 import com.derosa.progettolam.activities.LoginActivity
 import com.derosa.progettolam.activities.MyAudioActivity
 import com.derosa.progettolam.activities.RecordActivity
@@ -32,7 +32,8 @@ class AudioPersonali : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        audioViewModel = ViewModelProvider(this)[AudioViewModel::class.java]
+
+        audioViewModel = (activity as AppActivity).audioViewModel
     }
 
     override fun onCreateView(
@@ -57,6 +58,8 @@ class AudioPersonali : Fragment() {
 
         if (!isNetworkAvailable) {
             Toast.makeText(activity, "non sei connesso", Toast.LENGTH_SHORT).show()
+
+
         } else {
             audioViewModel.observeAudioMyLiveData().observe(viewLifecycleOwner) {
                 myAudioAdapter.setMyAudioList(ArrayList(it))
