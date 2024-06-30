@@ -148,10 +148,12 @@ class RecordActivity : AppCompatActivity() {
         audioViewModel.observeFileCorrectlyUploadedLiveData().observe(this) {
             Toast.makeText(this, "Caricamento avvenuto con successo!", Toast.LENGTH_SHORT).show()
 
-            audioViewModel.insertMyAudio(
+            audioViewModel.insertAudioDb(
                 AudioDataEntity(
+                    username = DataSingleton.username,
                     longitude = longitude,
                     latitude = latitude,
+                    locationName = getLocationName(longitude, latitude),
                     bpm = it.bpm,
                     danceability = it.danceability,
                     loudness = it.loudness,
@@ -360,17 +362,13 @@ class RecordActivity : AppCompatActivity() {
         return ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.RECORD_AUDIO
-        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
         ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun askPermissionAudio() {
         ActivityCompat.requestPermissions(
             this, arrayOf(
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                Manifest.permission.RECORD_AUDIO
             ), 0
         )
     }

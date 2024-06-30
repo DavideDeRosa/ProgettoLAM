@@ -481,15 +481,35 @@ class AudioViewModel(val audioDataDatabase: AudioDataDatabase) : ViewModel() {
         return audioDeleteErrorLiveData
     }
 
-    fun insertMyAudio(audio: AudioDataEntity){
+    //DATABASE
+    private lateinit var listAudioDbLiveData: LiveData<List<AudioDataEntity>>
+    private lateinit var audioDbLiveData: LiveData<AudioDataEntity>
+
+    fun insertAudioDb(audio: AudioDataEntity) {
         viewModelScope.launch {
-            audioDataDatabase.audioDataDao().insertMyAudio(audio)
+            audioDataDatabase.audioDataDao().insertAudio(audio)
         }
     }
 
-    fun deleteMyAudio(audio: AudioDataEntity){
+    fun deleteAudioDb(username: String, longitude: Double, latitude: Double) {
         viewModelScope.launch {
-            audioDataDatabase.audioDataDao().deleteMyAudio(audio)
+            audioDataDatabase.audioDataDao().deleteAudio(username, longitude, latitude)
         }
+    }
+
+    fun getAllAudioDb() {
+        listAudioDbLiveData = audioDataDatabase.audioDataDao().getAllAudio()
+    }
+
+    fun observeListAudioDbLiveData(): LiveData<List<AudioDataEntity>> {
+        return listAudioDbLiveData
+    }
+
+    fun getAudioById(id: Int) {
+        audioDbLiveData = audioDataDatabase.audioDataDao().getAudioById(id)
+    }
+
+    fun observeAudioDbLiveData(): LiveData<AudioDataEntity> {
+        return audioDbLiveData
     }
 }

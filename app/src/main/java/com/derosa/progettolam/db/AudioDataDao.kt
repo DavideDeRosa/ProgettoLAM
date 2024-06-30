@@ -2,7 +2,6 @@ package com.derosa.progettolam.db
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -11,11 +10,14 @@ import androidx.room.Query
 interface AudioDataDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMyAudio(audio: AudioDataEntity)
+    suspend fun insertAudio(audio: AudioDataEntity)
 
-    @Delete
-    suspend fun deleteMyAudio(audio: AudioDataEntity)
+    @Query("DELETE FROM audiodata WHERE username = :username AND longitude = :longitude AND latitude = :latitude")
+    suspend fun deleteAudio(username: String, longitude: Double, latitude: Double)
 
     @Query("SELECT * FROM audiodata")
-    fun getAllMyAudio(): LiveData<AudioDataEntity>
+    fun getAllAudio(): LiveData<List<AudioDataEntity>>
+
+    @Query("SELECT * FROM audiodata WHERE id = :id")
+    fun getAudioById(id: Int): LiveData<AudioDataEntity>
 }

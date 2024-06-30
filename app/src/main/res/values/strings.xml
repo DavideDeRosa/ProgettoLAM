@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">ProgettoLAM</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="app_name">Your city is listening to</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="account_information">Questa simpatica app ti permette di registrare audio ovunque tu sia.
         Gli audio verranno caricati sulla piattaforma che darà una serie di statistiche inerenti.

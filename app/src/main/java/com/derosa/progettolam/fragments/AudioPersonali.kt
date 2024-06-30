@@ -14,7 +14,9 @@ import com.derosa.progettolam.R
 import com.derosa.progettolam.activities.AppActivity
 import com.derosa.progettolam.activities.LoginActivity
 import com.derosa.progettolam.activities.MyAudioActivity
+import com.derosa.progettolam.activities.MyAudioOfflineActivity
 import com.derosa.progettolam.activities.RecordActivity
+import com.derosa.progettolam.adapters.AudioOfflineAdapter
 import com.derosa.progettolam.adapters.MyAudioAdapter
 import com.derosa.progettolam.adapters.SpacingItemDecoration
 import com.derosa.progettolam.databinding.FragmentAudioPersonaliBinding
@@ -27,6 +29,7 @@ class AudioPersonali : Fragment() {
 
     private lateinit var binding: FragmentAudioPersonaliBinding
     private lateinit var myAudioAdapter: MyAudioAdapter
+    private lateinit var audioOfflineAdapter: AudioOfflineAdapter
     private lateinit var audioViewModel: AudioViewModel
     private var audio_id: Int = 0
 
@@ -42,9 +45,18 @@ class AudioPersonali : Fragment() {
     ): View {
         binding = FragmentAudioPersonaliBinding.inflate(inflater, container, false)
 
+        val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val isNetworkAvailable = sharedPref.getBoolean("network_state", false)
+
+        if (!isNetworkAvailable) {
+            audioOfflineAdapter = AudioOfflineAdapter(context)
+            binding.recyclerView.adapter = audioOfflineAdapter
+        } else {
+            myAudioAdapter = MyAudioAdapter(context)
+            binding.recyclerView.adapter = myAudioAdapter
+        }
+
         binding.recyclerView.layoutManager = LinearLayoutManager(activity)
-        myAudioAdapter = MyAudioAdapter(context)
-        binding.recyclerView.adapter = myAudioAdapter
         binding.recyclerView.addItemDecoration(SpacingItemDecoration(20))
 
         return binding.root
@@ -57,9 +69,20 @@ class AudioPersonali : Fragment() {
         val isNetworkAvailable = sharedPref.getBoolean("network_state", false)
 
         if (!isNetworkAvailable) {
-            Toast.makeText(activity, "non sei connesso", Toast.LENGTH_SHORT).show()
+            view.findViewById<FloatingActionButton>(R.id.addAudio).visibility = View.GONE
 
+            audioViewModel.getAllAudioDb()
 
+            audioViewModel.observeListAudioDbLiveData().observe(viewLifecycleOwner) {
+                audioOfflineAdapter.setAudioList(ArrayList(it))
+            }
+
+            audioOfflineAdapter.onItemClick = {
+                val intent = Intent(activity, MyAudioOfflineActivity::class.java)
+                intent.putExtra("audio_id_offline", it.id)
+                startActivity(intent)
+                activity?.finish()
+            }
         } else {
             audioViewModel.observeAudioMyLiveData().observe(viewLifecycleOwner) {
                 myAudioAdapter.setMyAudioList(ArrayList(it))
