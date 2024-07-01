@@ -71,6 +71,7 @@ class AudioPersonali : Fragment() {
 
         if (!isNetworkAvailable) {
             view.findViewById<FloatingActionButton>(R.id.addAudio).visibility = View.GONE
+            view.findViewById<FloatingActionButton>(R.id.viewUpload).visibility = View.GONE
 
             audioViewModel.getAllAudioDb()
 

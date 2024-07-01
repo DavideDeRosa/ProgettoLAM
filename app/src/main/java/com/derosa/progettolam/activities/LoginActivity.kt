@@ -30,6 +30,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         if (!isNetworkAvailable) {
+            Toast.makeText(this, "Nessuna connessione.\nSei in modalità Offline!", Toast.LENGTH_LONG).show()
             val intent = Intent(this, AppActivity::class.java)
             startActivity(intent)
             finish()
