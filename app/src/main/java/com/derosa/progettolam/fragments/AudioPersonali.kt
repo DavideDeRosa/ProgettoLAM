@@ -16,6 +16,7 @@ import com.derosa.progettolam.activities.LoginActivity
 import com.derosa.progettolam.activities.MyAudioActivity
 import com.derosa.progettolam.activities.MyAudioOfflineActivity
 import com.derosa.progettolam.activities.RecordActivity
+import com.derosa.progettolam.activities.UploadActivity
 import com.derosa.progettolam.adapters.AudioOfflineAdapter
 import com.derosa.progettolam.adapters.MyAudioAdapter
 import com.derosa.progettolam.adapters.SpacingItemDecoration
@@ -112,8 +113,13 @@ class AudioPersonali : Fragment() {
 
             onMyAudioClick()
 
-            val btnAddAudio = view.findViewById<FloatingActionButton>(R.id.addAudio)
-            btnAddAudio.setOnClickListener {
+            view.findViewById<FloatingActionButton>(R.id.viewUpload).setOnClickListener {
+                val intent = Intent(activity, UploadActivity::class.java)
+                startActivity(intent)
+                activity?.finish()
+            }
+
+            view.findViewById<FloatingActionButton>(R.id.addAudio).setOnClickListener {
                 val intent = Intent(activity, RecordActivity::class.java)
                 startActivity(intent)
                 activity?.finish()

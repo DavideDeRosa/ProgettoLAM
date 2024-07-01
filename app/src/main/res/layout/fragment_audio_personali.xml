@@ -30,6 +30,16 @@
             android:scrollbars="vertical" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/viewUpload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="86dp"
+            android:src="@drawable/upload_black"
+            app:backgroundTint="@color/white" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/addAudio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

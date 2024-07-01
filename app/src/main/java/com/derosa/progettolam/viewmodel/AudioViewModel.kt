@@ -6,8 +6,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.derosa.progettolam.db.AudioDataDatabase
 import com.derosa.progettolam.db.AudioDataEntity
+import com.derosa.progettolam.db.AudioDatabase
+import com.derosa.progettolam.db.UploadDataEntity
 import com.derosa.progettolam.pojo.AudioAllData
 import com.derosa.progettolam.pojo.AudioMetaData
 import com.derosa.progettolam.pojo.AudioNotFound
@@ -29,7 +30,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class AudioViewModel(val audioDataDatabase: AudioDataDatabase) : ViewModel() {
+class AudioViewModel(val audioDatabase: AudioDatabase) : ViewModel() {
 
     val gson = Gson()
 
@@ -481,24 +482,28 @@ class AudioViewModel(val audioDataDatabase: AudioDataDatabase) : ViewModel() {
         return audioDeleteErrorLiveData
     }
 
-    //DATABASE
+    //SEZIONE DATABASE
+    //LiveData AudioData
     private lateinit var listAudioDbLiveData: LiveData<List<AudioDataEntity>>
     private lateinit var audioDbLiveData: LiveData<AudioDataEntity>
 
+    //LiveData UploadData
+    private lateinit var listUploadDbLiveData: LiveData<List<UploadDataEntity>>
+
     fun insertAudioDb(audio: AudioDataEntity) {
         viewModelScope.launch {
-            audioDataDatabase.audioDataDao().insertAudio(audio)
+            audioDatabase.audioDataDao().insertAudio(audio)
         }
     }
 
     fun deleteAudioDb(username: String, longitude: Double, latitude: Double) {
         viewModelScope.launch {
-            audioDataDatabase.audioDataDao().deleteAudio(username, longitude, latitude)
+            audioDatabase.audioDataDao().deleteAudio(username, longitude, latitude)
         }
     }
 
     fun getAllAudioDb() {
-        listAudioDbLiveData = audioDataDatabase.audioDataDao().getAllAudio()
+        listAudioDbLiveData = audioDatabase.audioDataDao().getAllAudio()
     }
 
     fun observeListAudioDbLiveData(): LiveData<List<AudioDataEntity>> {
@@ -506,10 +511,30 @@ class AudioViewModel(val audioDataDatabase: AudioDataDatabase) : ViewModel() {
     }
 
     fun getAudioById(id: Int) {
-        audioDbLiveData = audioDataDatabase.audioDataDao().getAudioById(id)
+        audioDbLiveData = audioDatabase.audioDataDao().getAudioById(id)
     }
 
     fun observeAudioDbLiveData(): LiveData<AudioDataEntity> {
         return audioDbLiveData
+    }
+
+    fun insertUploadDb(upload: UploadDataEntity) {
+        viewModelScope.launch {
+            audioDatabase.uploadDataDao().insertUpload(upload)
+        }
+    }
+
+    fun deleteUploadDb(username: String, longitude: Double, latitude: Double) {
+        viewModelScope.launch {
+            audioDatabase.uploadDataDao().deleteUpload(username, longitude, latitude)
+        }
+    }
+
+    fun getAllUploadByUsernameDb(username: String) {
+        listUploadDbLiveData = audioDatabase.uploadDataDao().getAllUploadByUsername(username)
+    }
+
+    fun observeListUploadDbLiveData(): LiveData<List<UploadDataEntity>> {
+        return listUploadDbLiveData
     }
 }

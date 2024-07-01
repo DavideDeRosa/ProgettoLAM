@@ -27,8 +27,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.arthenica.mobileffmpeg.Config
 import com.arthenica.mobileffmpeg.FFmpeg
 import com.derosa.progettolam.R
-import com.derosa.progettolam.db.AudioDataDatabase
 import com.derosa.progettolam.db.AudioDataEntity
+import com.derosa.progettolam.db.AudioDatabase
+import com.derosa.progettolam.db.UploadDataEntity
 import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.util.ExtraUtil
 import com.derosa.progettolam.viewmodel.AudioViewModel
@@ -78,8 +79,8 @@ class RecordActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_record)
 
-        val audioDataDatabase = AudioDataDatabase.getInstance(this)
-        val viewModelFactory = AudioViewModelFactory(audioDataDatabase)
+        val audioDatabase = AudioDatabase.getInstance(this)
+        val viewModelFactory = AudioViewModelFactory(audioDatabase)
         audioViewModel = ViewModelProvider(this, viewModelFactory)[AudioViewModel::class.java]
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -340,6 +341,29 @@ class RecordActivity : AppCompatActivity() {
     }
 
     private fun confirmRecording() {
+        if (ExtraUtil.isWifiConnected(this)) {
+            uploadAudio()
+        } else {
+            showUploadConfirmationDialog()
+        }
+    }
+
+    private fun showUploadConfirmationDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Conferma")
+            .setMessage("Non sei connesso ad una rete Wi-Fi. Vuoi continuare il caricamento con i dati mobili?")
+            .setPositiveButton("Si") { dialog, which ->
+                uploadAudio()
+                dialog.dismiss()
+            }
+            .setNegativeButton("No") { dialog, which ->
+                saveUploadDb()
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun uploadAudio() {
         val token = DataSingleton.token
         if (token != null) {
             val mp3File = File(mp3FilePath)
@@ -356,6 +380,19 @@ class RecordActivity : AppCompatActivity() {
                 Toast.makeText(this, "C'è stato un errore!", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun saveUploadDb() {
+        audioViewModel.insertUploadDb(
+            UploadDataEntity(
+                username = DataSingleton.username,
+                longitude = longitude,
+                latitude = latitude
+            )
+        )
+
+        Toast.makeText(this, "Audio salvato in memoria correttamente!", Toast.LENGTH_SHORT).show()
+        goToAppActivity()
     }
 
     private fun checkPermissionAudio(): Boolean {

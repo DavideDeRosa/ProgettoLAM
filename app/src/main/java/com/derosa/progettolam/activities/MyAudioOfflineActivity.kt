@@ -10,7 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
-import com.derosa.progettolam.db.AudioDataDatabase
+import com.derosa.progettolam.db.AudioDatabase
 import com.derosa.progettolam.db.AudioDataEntity
 import com.derosa.progettolam.viewmodel.AudioViewModel
 import com.derosa.progettolam.viewmodel.AudioViewModelFactory
@@ -25,8 +25,8 @@ class MyAudioOfflineActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_audio_offline)
 
-        val audioDataDatabase = AudioDataDatabase.getInstance(this)
-        val viewModelFactory = AudioViewModelFactory(audioDataDatabase)
+        val audioDatabase = AudioDatabase.getInstance(this)
+        val viewModelFactory = AudioViewModelFactory(audioDatabase)
         audioViewModel = ViewModelProvider(this, viewModelFactory)[AudioViewModel::class.java]
 
         val id = intent.getIntExtra("audio_id_offline", 0)

@@ -14,7 +14,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
-import com.derosa.progettolam.db.AudioDataDatabase
+import com.derosa.progettolam.db.AudioDatabase
 import com.derosa.progettolam.pojo.AudioMetaData
 import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.util.ExtraUtil
@@ -34,8 +34,8 @@ class MyAudioActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_audio)
 
-        val audioDataDatabase = AudioDataDatabase.getInstance(this)
-        val viewModelFactory = AudioViewModelFactory(audioDataDatabase)
+        val audioDatabase = AudioDatabase.getInstance(this)
+        val viewModelFactory = AudioViewModelFactory(audioDatabase)
         audioViewModel = ViewModelProvider(this, viewModelFactory)[AudioViewModel::class.java]
 
         audioViewModel.observeAudioByIdLiveData().observe(this) {
