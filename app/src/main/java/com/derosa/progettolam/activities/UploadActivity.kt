@@ -2,6 +2,8 @@ package com.derosa.progettolam.activities
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.location.Address
+import android.location.Geocoder
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -12,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.derosa.progettolam.R
 import com.derosa.progettolam.adapters.SpacingItemDecoration
 import com.derosa.progettolam.adapters.UploadAdapter
+import com.derosa.progettolam.db.AudioDataEntity
 import com.derosa.progettolam.db.AudioDatabase
 import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.util.ExtraUtil
@@ -21,6 +24,8 @@ import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.File
+import java.io.IOException
+import java.util.Locale
 
 class UploadActivity : AppCompatActivity() {
 
@@ -92,6 +97,22 @@ class UploadActivity : AppCompatActivity() {
 
                 audioViewModel.observeFileCorrectlyUploadedLiveData().observe(this) {
                     audioViewModel.deleteUploadDb(username, longitude, latitude)
+
+                    audioViewModel.insertAudioDb(
+                        AudioDataEntity(
+                            username = DataSingleton.username,
+                            longitude = longitude,
+                            latitude = latitude,
+                            locationName = getLocationName(longitude, latitude),
+                            bpm = it.bpm,
+                            danceability = it.danceability,
+                            loudness = it.loudness,
+                            genre = it.genre.getMaxGenre().first,
+                            mood = it.mood.getMaxMood().first,
+                            instrument = it.instrument.getMaxInstrument().first
+                        )
+                    )
+
                     Toast.makeText(this, "Audio caricato correttamente!", Toast.LENGTH_SHORT).show()
                 }
             } else {
@@ -100,6 +121,22 @@ class UploadActivity : AppCompatActivity() {
                 Toast.makeText(this, "C'è stato un errore!", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun getLocationName(longitude: Double, latitude: Double): String {
+        val geocoder = Geocoder(this, Locale.getDefault())
+        var locationName = ""
+
+        try {
+            val addresses: List<Address>? = geocoder.getFromLocation(latitude, longitude, 1)
+            if (addresses != null && addresses.isNotEmpty()) {
+                locationName = addresses[0].getAddressLine(0)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return locationName
     }
 
     private fun goToAppActivity() {

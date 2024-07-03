@@ -1,15 +1,20 @@
 package com.derosa.progettolam.activities
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
+import com.derosa.progettolam.notification.ConnectivityService
 import com.derosa.progettolam.util.DataSingleton
 import com.derosa.progettolam.util.ExtraUtil
 import com.derosa.progettolam.viewmodel.UserViewModel
@@ -22,6 +27,9 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        requestNotificationPermission()
+        startService(Intent(this, ConnectivityService::class.java))
+
         val isNetworkAvailable = ExtraUtil.isNetworkAvailable(this)
         val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         with(sharedPref.edit()) {
@@ -30,7 +38,11 @@ class LoginActivity : AppCompatActivity() {
         }
 
         if (!isNetworkAvailable) {
-            Toast.makeText(this, "Nessuna connessione.\nSei in modalità Offline!", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                this,
+                "Nessuna connessione.\nSei in modalità Offline!",
+                Toast.LENGTH_LONG
+            ).show()
             val intent = Intent(this, AppActivity::class.java)
             startActivity(intent)
             finish()
@@ -87,5 +99,40 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun requestNotificationPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                REQUEST_CODE_POST_NOTIFICATIONS
+            )
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_POST_NOTIFICATIONS) {
+            if (!(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                Toast.makeText(
+                    this,
+                    "Rifiutando le notifiche non potrai ricevere aggiornamenti!",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    companion object {
+        const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
     }
 }

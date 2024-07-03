@@ -17,4 +17,7 @@ interface UploadDataDao {
 
     @Query("SELECT * FROM uploaddata WHERE username = :username")
     fun getAllUploadByUsername(username: String): LiveData<List<UploadDataEntity>>
+
+    @Query("SELECT * FROM uploaddata WHERE username = :username")
+    suspend fun getAllUploadByUsernameInt(username: String): List<UploadDataEntity>
 }
