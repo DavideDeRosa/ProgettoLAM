@@ -4,21 +4,14 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
-import androidx.lifecycle.ProcessLifecycleOwner
 
 class MyApp : Application(), LifecycleObserver {
 
-    companion object {
-        var isAppInForeground = false
-    }
-
     override fun onCreate() {
         super.onCreate()
+
         createNotificationChannel()
-        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
     }
 
     private fun createNotificationChannel() {
@@ -34,15 +27,5 @@ class MyApp : Application(), LifecycleObserver {
                 getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    fun onEnterForeground() {
-        isAppInForeground = true
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    fun onEnterBackground() {
-        isAppInForeground = false
     }
 }

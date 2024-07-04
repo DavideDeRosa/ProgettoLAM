@@ -41,7 +41,7 @@ class WifiStateWorker(context: Context, workerParams: WorkerParameters) :
         val notification = NotificationCompat.Builder(applicationContext, channelId)
             .setSmallIcon(R.drawable.audio)
             .setContentTitle("Sei connesso al Wi-Fi!")
-            .setContentText("Apri l'app per caricare i tuoi audio in sospeso.")
+            .setContentText("I tuoi caricamenti in sospeso sono stati completati correttamente!")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
