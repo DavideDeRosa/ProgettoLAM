@@ -22,6 +22,7 @@ import androidx.fragment.app.Fragment
 import com.derosa.progettolam.R
 import com.derosa.progettolam.activities.AppActivity
 import com.derosa.progettolam.activities.LoginActivity
+import com.derosa.progettolam.activities.MapListActivity
 import com.derosa.progettolam.db.AllAudioDataEntity
 import com.derosa.progettolam.dialogs.AudioMetadataDialog
 import com.derosa.progettolam.pojo.AudioMetaData
@@ -61,7 +62,7 @@ class Mappa : Fragment() {
         val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         isNetworkAvailable = sharedPref.getBoolean("network_state", false)
 
-        if (isNetworkAvailable){
+        if (isNetworkAvailable) {
             val token = DataSingleton.token
             if (token != null) {
                 audioViewModel.allAudio(token)
@@ -82,6 +83,7 @@ class Mappa : Fragment() {
         if (!isNetworkAvailable) {
             view.findViewById<TextView>(R.id.txtOfflineMappa).visibility = View.VISIBLE
             view.findViewById<MapView>(R.id.map).visibility = View.GONE
+            view.findViewById<FloatingActionButton>(R.id.viewMapList).visibility = View.GONE
             view.findViewById<FloatingActionButton>(R.id.myLocation).visibility = View.GONE
         } else {
             map = view.findViewById(R.id.map)
@@ -141,6 +143,13 @@ class Mappa : Fragment() {
             audioViewModel.observeAudioByIdErrorLiveData().observe(viewLifecycleOwner) {
                 Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
                 goToLogin()
+            }
+
+            val fabViewMapList: FloatingActionButton = view.findViewById(R.id.viewMapList)
+            fabViewMapList.setOnClickListener {
+                val intent = Intent(activity, MapListActivity::class.java)
+                startActivity(intent)
+                activity?.finish()
             }
 
             val fabMyLocation: FloatingActionButton = view.findViewById(R.id.myLocation)
