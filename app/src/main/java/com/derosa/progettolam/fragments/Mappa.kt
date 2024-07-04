@@ -222,7 +222,7 @@ class Mappa : Fragment() {
 
     private fun isLocationFresh(location: Location): Boolean {
         val locationAge = System.currentTimeMillis() - location.time
-        return locationAge < 30000
+        return locationAge < 10000
     }
 
     @SuppressLint("MissingPermission")
