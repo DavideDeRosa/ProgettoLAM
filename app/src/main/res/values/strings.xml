@@ -19,4 +19,5 @@
     <string name="offline_msg">Sei in modalità Offline.\nRiavvia l\'app una volta stabilita una connessione ad internet stabile!</string>
     <string name="audio_da_caricare">AUDIO DA CARICARE</string>
     <string name="tutti_gli_audio">TUTTI GLI AUDIO</string>
+    <string name="importa_registrazione">Importa registrazione</string>
 </resources>

@@ -53,6 +53,7 @@ class RecordActivity : AppCompatActivity() {
     private lateinit var btnLocal: Button
     private lateinit var txtLocal: TextView
     private lateinit var btnStartRecording: Button
+    private lateinit var btnImport: Button
     private lateinit var txtDuration: TextView
     private lateinit var btnStopRecording: Button
     private lateinit var btnPlay: Button
@@ -89,6 +90,7 @@ class RecordActivity : AppCompatActivity() {
         btnLocal = findViewById(R.id.btnLocal)
         txtLocal = findViewById(R.id.txtLocal)
         btnStartRecording = findViewById(R.id.btnStartRecording)
+        btnImport = findViewById(R.id.btnImport)
         txtDuration = findViewById(R.id.txtDuration)
         btnStopRecording = findViewById(R.id.btnStopRecording)
         btnPlay = findViewById(R.id.btnPlayAudio)
@@ -123,6 +125,13 @@ class RecordActivity : AppCompatActivity() {
             }
         }
 
+        btnImport.setOnClickListener {
+            val intent = Intent()
+            intent.setType("audio/*")
+            intent.setAction(Intent.ACTION_GET_CONTENT)
+            startActivityForResult(intent, 1)
+        }
+
         btnStopRecording.setOnClickListener {
             stopRecording()
             showUIAfterStopRecording()
@@ -142,6 +151,47 @@ class RecordActivity : AppCompatActivity() {
 
         btnConfirmRecording.setOnClickListener {
             confirmRecording()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            val username = DataSingleton.username
+            mp3FilePath =
+                externalCacheDir?.absolutePath + "/" + username + "_" + longitude + "_" + latitude + ".mp3"
+
+            val tempFile = File.createTempFile("temp_audio", ".mp3", cacheDir)
+            val inputStream = contentResolver.openInputStream(data!!.data!!)
+            val outputStream = tempFile.outputStream()
+
+            inputStream?.use { input ->
+                outputStream.use { output ->
+                    input.copyTo(output)
+                }
+            }
+
+            val ffmpegCommand = arrayOf(
+                "-i",
+                tempFile.absolutePath,
+                "-codec:a",
+                "libmp3lame",
+                "-qscale:a",
+                "2",
+                mp3FilePath
+            )
+            val rc = FFmpeg.execute(ffmpegCommand)
+
+            if (rc == Config.RETURN_CODE_SUCCESS) {
+                Log.d("FFmpeg", "Conversion to MP3 succeeded.")
+                showUIAfterImport()
+
+                if (tempFile.exists()) {
+                    tempFile.delete()
+                }
+            } else {
+                Log.d("FFmpeg", "Conversion to MP3 failed. Return code: $rc")
+            }
         }
     }
 
@@ -565,6 +615,7 @@ class RecordActivity : AppCompatActivity() {
         btnLocal.setBackgroundResource(R.color.grey_opaque)
 
         btnStartRecording.visibility = View.VISIBLE
+        btnImport.visibility = View.VISIBLE
     }
 
     private fun showUIAfterStartRecording() {
@@ -577,6 +628,18 @@ class RecordActivity : AppCompatActivity() {
     private fun showUIAfterStopRecording() {
         btnStopRecording.isEnabled = false
         btnStopRecording.setBackgroundResource(R.color.grey_opaque)
+
+        btnPlay.visibility = View.VISIBLE
+        btnStop.visibility = View.VISIBLE
+        btnDeleteRecording.visibility = View.VISIBLE
+        btnConfirmRecording.visibility = View.VISIBLE
+    }
+
+    private fun showUIAfterImport() {
+        btnImport.isEnabled = false
+        btnImport.setBackgroundResource(R.color.grey_opaque)
+        btnStartRecording.isEnabled = false
+        btnStartRecording.setBackgroundResource(R.color.grey_opaque)
 
         btnPlay.visibility = View.VISIBLE
         btnStop.visibility = View.VISIBLE
