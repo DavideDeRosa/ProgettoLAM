@@ -5,11 +5,12 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [AudioDataEntity::class, UploadDataEntity::class], version = 2)
+@Database(entities = [AudioDataEntity::class, UploadDataEntity::class, AllAudioDataEntity::class], version = 3)
 abstract class AudioDatabase : RoomDatabase() {
 
     abstract fun audioDataDao(): AudioDataDao
     abstract fun uploadDataDao(): UploadDataDao
+    abstract fun allAudioDataDao(): AllAudioDataDao
 
     companion object {
         @Volatile

@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
+import com.derosa.progettolam.db.AudioDataEntity
 import com.derosa.progettolam.db.AudioDatabase
 import com.derosa.progettolam.pojo.AudioMetaData
 import com.derosa.progettolam.util.DataSingleton
@@ -28,7 +29,11 @@ class MyAudioActivity : AppCompatActivity() {
 
     private lateinit var audioViewModel: AudioViewModel
     private lateinit var audio: AudioMetaData
+    private lateinit var audioDb: AudioDataEntity
     private var mediaPlayer: MediaPlayer? = null
+    private var id = 0
+    private var longitude = 0.0
+    private var latitude = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,8 +43,30 @@ class MyAudioActivity : AppCompatActivity() {
         val viewModelFactory = AudioViewModelFactory(audioDatabase)
         audioViewModel = ViewModelProvider(this, viewModelFactory)[AudioViewModel::class.java]
 
+        id = intent.getIntExtra("audio_id", 0)
+        longitude = intent.getDoubleExtra("longitude", 0.0)
+        latitude = intent.getDoubleExtra("latitude", 0.0)
+
+        val token = DataSingleton.token
+        val username = DataSingleton.username
+        if (username != null) {
+            audioViewModel.getAudioByCoordDb(username, longitude, latitude)
+        }
+
+        audioViewModel.observeAudioByCoordDbLiveData().observe(this) {
+            if (it.isEmpty()) {
+                if (token != null) {
+                    audioViewModel.getAudioById(token, id)
+                }
+            } else {
+                audioDb = it[0]
+                initializeFromDb()
+            }
+        }
+
         audioViewModel.observeAudioByIdLiveData().observe(this) {
             audio = it
+            saveIntoDb(it)
             initialize()
         }
 
@@ -47,12 +74,106 @@ class MyAudioActivity : AppCompatActivity() {
             Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
             goToLogin()
         }
+    }
 
-        val id = intent.getIntExtra("audio_id", 0)
+    private fun saveIntoDb(audio: AudioMetaData) {
+        audioViewModel.insertAudioDb(
+            AudioDataEntity(
+                id = audio.id,
+                username = audio.creator_username,
+                longitude = audio.longitude,
+                latitude = audio.latitude,
+                locationName = getLocationName(audio.longitude, audio.latitude),
+                bpm = audio.tags.bpm,
+                danceability = audio.tags.danceability,
+                loudness = audio.tags.loudness,
+                genre = audio.tags.genre.getMaxGenre().first,
+                instrument = audio.tags.instrument.getMaxInstrument().first,
+                mood = audio.tags.mood.getMaxMood().first
+            )
+        )
+    }
 
-        val token = DataSingleton.token
-        if (token != null) {
-            audioViewModel.getAudioById(token, id)
+    private fun initializeFromDb() {
+        findViewById<TextView>(R.id.textIniziale).visibility = View.VISIBLE
+
+        findViewById<TextView>(R.id.textLongitude).text = "Longitudine: ${audioDb.longitude}"
+        findViewById<TextView>(R.id.textLatitude).text = "Latitudine: ${audioDb.latitude}"
+        findViewById<TextView>(R.id.textCreatorUsername).text =
+            "Username del creatore: ${audioDb.username}"
+        findViewById<TextView>(R.id.textBpm).text = "BPM: ${audioDb.bpm}"
+        findViewById<TextView>(R.id.textDanceability).text =
+            "Danzabilità: ${audioDb.danceability}"
+        findViewById<TextView>(R.id.textLoudness).text = "Rumorosità: ${audioDb.loudness}"
+
+        findViewById<TextView>(R.id.textLuogo).text =
+            "Località: " + getLocationName(audioDb.longitude!!, audioDb.latitude!!)
+
+        findViewById<TextView>(R.id.textTopMood).text = "Mood: ${audioDb.mood}"
+
+        findViewById<TextView>(R.id.textTopGenre).text = "Genere: ${audioDb.genre}"
+
+        findViewById<TextView>(R.id.textTopInstrument).text =
+            "Strumento principale: ${audioDb.instrument}"
+
+        observeAll()
+
+        findViewById<Button>(R.id.btnPlay).visibility = View.VISIBLE
+        findViewById<Button>(R.id.btnStop).visibility = View.VISIBLE
+        findViewById<Button>(R.id.btnDelete).visibility = View.VISIBLE
+        findViewById<Button>(R.id.btnHide).visibility = View.VISIBLE
+
+        findViewById<Button>(R.id.btnPlay).setOnClickListener {
+            val username = DataSingleton.username
+            val audioFilePath =
+                externalCacheDir?.absolutePath + "/" + username + "_" + audioDb.longitude + "_" + audioDb.latitude + ".mp3"
+            val audioFile = File(audioFilePath)
+
+            if (audioFile.exists()) {
+                mediaPlayer = MediaPlayer()
+                mediaPlayer?.apply {
+                    setDataSource(audioFilePath)
+                    prepare()
+                    start()
+
+                    findViewById<Button>(R.id.btnPlay).isEnabled = false
+                    findViewById<Button>(R.id.btnPlay).setBackgroundResource(R.color.green_opaque)
+
+                    setOnCompletionListener {
+                        findViewById<Button>(R.id.btnPlay).isEnabled = true
+                        findViewById<Button>(R.id.btnPlay).setBackgroundResource(R.color.green)
+                    }
+                }
+            } else {
+                Toast.makeText(this, "Il file audio non esiste", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        findViewById<Button>(R.id.btnStop).setOnClickListener {
+            mediaPlayer?.let {
+                if (it.isPlaying) {
+                    it.stop()
+                }
+                it.release()
+                mediaPlayer = null
+
+                findViewById<Button>(R.id.btnPlay).isEnabled = true
+                findViewById<Button>(R.id.btnPlay).setBackgroundResource(R.color.green)
+            }
+        }
+
+        findViewById<Button>(R.id.btnHide).setOnClickListener {
+            val token = DataSingleton.token
+            if (token != null) {
+                audioViewModel.hideAudio(token, id)
+            }
+        }
+
+        findViewById<Button>(R.id.btnDelete).setOnClickListener {
+            val token = DataSingleton.token
+            if (token != null) {
+                showDeleteConfirmationDialog(token)
+            }
         }
     }
 
@@ -157,11 +278,11 @@ class MyAudioActivity : AppCompatActivity() {
 
         audioViewModel.observeAudioDeleteLiveData().observe(this) {
             Toast.makeText(this, it.detail, Toast.LENGTH_SHORT).show()
-            deleteAudio(audio)
+            deleteAudio()
 
             val username = DataSingleton.username
-            if (username != null){
-                audioViewModel.deleteAudioDb(username, audio.longitude, audio.latitude)
+            if (username != null) {
+                audioViewModel.deleteAudioDb(username, longitude, latitude)
             }
 
             val intent = Intent(this, AppActivity::class.java)
@@ -180,7 +301,7 @@ class MyAudioActivity : AppCompatActivity() {
         builder.setTitle("Conferma")
             .setMessage("Sei sicuro di voler cancellare l'audio?")
             .setPositiveButton("Si") { dialog, which ->
-                audioViewModel.deleteAudio(token, audio.id)
+                audioViewModel.deleteAudio(token, id)
                 dialog.dismiss()
             }
             .setNegativeButton("No") { dialog, which ->
@@ -189,10 +310,10 @@ class MyAudioActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun deleteAudio(audio: AudioMetaData) {
+    private fun deleteAudio() {
         val username = DataSingleton.username
         val audioFile =
-            File(externalCacheDir?.absolutePath + "/" + username + "_" + audio.longitude + "_" + audio.latitude + ".mp3")
+            File(externalCacheDir?.absolutePath + "/" + username + "_" + longitude + "_" + latitude + ".mp3")
 
         if (audioFile.exists()) {
             val deleted = audioFile.delete()

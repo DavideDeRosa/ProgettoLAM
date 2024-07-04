@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.derosa.progettolam.db.AllAudioDataEntity
 import com.derosa.progettolam.db.AudioDataEntity
 import com.derosa.progettolam.db.AudioDatabase
 import com.derosa.progettolam.db.UploadDataEntity
@@ -486,9 +487,14 @@ class AudioViewModel(val audioDatabase: AudioDatabase) : ViewModel() {
     //LiveData AudioData
     private lateinit var listAudioDbLiveData: LiveData<List<AudioDataEntity>>
     private lateinit var audioDbLiveData: LiveData<AudioDataEntity>
+    private lateinit var audioByCoordDbLiveData: LiveData<List<AudioDataEntity>>
 
     //LiveData UploadData
     private lateinit var listUploadDbLiveData: LiveData<List<UploadDataEntity>>
+
+    //LiveData AllAudioData
+    private var allAudioDbMLiveData = MutableLiveData<List<AllAudioDataEntity>>()
+    private var allAudioDbLiveData: LiveData<List<AllAudioDataEntity>> = allAudioDbMLiveData
 
     fun insertAudioDb(audio: AudioDataEntity) {
         viewModelScope.launch {
@@ -518,6 +524,15 @@ class AudioViewModel(val audioDatabase: AudioDatabase) : ViewModel() {
         return audioDbLiveData
     }
 
+    fun getAudioByCoordDb(username: String, longitude: Double, latitude: Double) {
+        audioByCoordDbLiveData =
+            audioDatabase.audioDataDao().getAudioByCoord(username, longitude, latitude)
+    }
+
+    fun observeAudioByCoordDbLiveData(): LiveData<List<AudioDataEntity>> {
+        return audioByCoordDbLiveData
+    }
+
     fun insertUploadDb(upload: UploadDataEntity) {
         viewModelScope.launch {
             audioDatabase.uploadDataDao().insertUpload(upload)
@@ -536,5 +551,22 @@ class AudioViewModel(val audioDatabase: AudioDatabase) : ViewModel() {
 
     fun observeListUploadDbLiveData(): LiveData<List<UploadDataEntity>> {
         return listUploadDbLiveData
+    }
+
+    fun insertAllAudioDb(audio: AllAudioDataEntity) {
+        viewModelScope.launch {
+            audioDatabase.allAudioDataDao().insertAllAudio(audio)
+        }
+    }
+
+    fun getAllAudioByCoord(longitude: Double, latitude: Double) {
+        viewModelScope.launch {
+            allAudioDbMLiveData.value =
+                audioDatabase.allAudioDataDao().getAllAudioByCoord(longitude, latitude)
+        }
+    }
+
+    fun observeAllAudioDbLiveData(): LiveData<List<AllAudioDataEntity>> {
+        return allAudioDbLiveData
     }
 }

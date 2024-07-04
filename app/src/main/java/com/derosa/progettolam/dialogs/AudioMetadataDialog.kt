@@ -11,11 +11,15 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.derosa.progettolam.R
+import com.derosa.progettolam.db.AllAudioDataEntity
 import com.derosa.progettolam.pojo.AudioMetaData
 import java.io.IOException
 import java.util.Locale
 
-class AudioMetadataDialog(private val audio: AudioMetaData) : DialogFragment() {
+class AudioMetadataDialog(
+    private val audio: AudioMetaData?,
+    private val audioDb: AllAudioDataEntity?
+) : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return super.onCreateDialog(savedInstanceState).apply {
@@ -41,11 +45,16 @@ class AudioMetadataDialog(private val audio: AudioMetaData) : DialogFragment() {
         dialog?.window?.setGravity(Gravity.CENTER)
         dialog?.setCanceledOnTouchOutside(true)
 
-        initializeDialog(view)
+        if (audio != null) {
+            initializeDialog(view)
+        } else {
+            initializeDialogDb(view)
+        }
+
     }
 
     private fun initializeDialog(view: View) {
-        view.findViewById<TextView>(R.id.textLongitude).text = "Longitudine: ${audio.longitude}"
+        view.findViewById<TextView>(R.id.textLongitude).text = "Longitudine: ${audio!!.longitude}"
         view.findViewById<TextView>(R.id.textLatitude).text = "Latitudine: ${audio.latitude}"
         view.findViewById<TextView>(R.id.textCreatorUsername).text =
             "Username del creatore: ${audio.creator_username}"
@@ -66,6 +75,27 @@ class AudioMetadataDialog(private val audio: AudioMetaData) : DialogFragment() {
         val maxInstrument = audio.tags.getMaxInstrument()
         view.findViewById<TextView>(R.id.textTopInstrument).text =
             "Strumento principale: ${maxInstrument.first}"
+    }
+
+    private fun initializeDialogDb(view: View) {
+        view.findViewById<TextView>(R.id.textLongitude).text = "Longitudine: ${audioDb!!.longitude}"
+        view.findViewById<TextView>(R.id.textLatitude).text = "Latitudine: ${audioDb.latitude}"
+        view.findViewById<TextView>(R.id.textCreatorUsername).text =
+            "Username del creatore: ${audioDb.username}"
+        view.findViewById<TextView>(R.id.textBpm).text = "BPM: ${audioDb.bpm}"
+        view.findViewById<TextView>(R.id.textDanceability).text =
+            "Danzabilità: ${audioDb.danceability}"
+        view.findViewById<TextView>(R.id.textLoudness).text = "Rumorosità: ${audioDb.loudness}"
+
+        view.findViewById<TextView>(R.id.textLuogo).text =
+            "Località: " + getLocationName(audioDb.longitude!!, audioDb.latitude!!)
+
+        view.findViewById<TextView>(R.id.textTopMood).text = "Mood: ${audioDb.mood}"
+
+        view.findViewById<TextView>(R.id.textTopGenre).text = "Genere: ${audioDb.genre}"
+
+        view.findViewById<TextView>(R.id.textTopInstrument).text =
+            "Strumento principale: ${audioDb.instrument}"
     }
 
     private fun getLocationName(longitude: Double, latitude: Double): String {

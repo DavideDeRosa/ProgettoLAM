@@ -33,6 +33,8 @@ class AudioPersonali : Fragment() {
     private lateinit var audioOfflineAdapter: AudioOfflineAdapter
     private lateinit var audioViewModel: AudioViewModel
     private var audio_id: Int = 0
+    private var longitude: Double = 0.0
+    private var latitude: Double = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,6 +100,8 @@ class AudioPersonali : Fragment() {
             audioViewModel.observeAudioShowLiveData().observe(viewLifecycleOwner) {
                 val intent = Intent(activity, MyAudioActivity::class.java)
                 intent.putExtra("audio_id", audio_id)
+                intent.putExtra("longitude", longitude)
+                intent.putExtra("latitude", latitude)
                 startActivity(intent)
                 activity?.finish()
             }
@@ -133,10 +137,12 @@ class AudioPersonali : Fragment() {
             val token = DataSingleton.token
             if (token != null) {
                 if (it.hidden) {
-                    showShowConfirmationDialog(token, it.id)
+                    showShowConfirmationDialog(token, it.id, it.longitude, it.latitude)
                 } else {
                     val intent = Intent(activity, MyAudioActivity::class.java)
                     intent.putExtra("audio_id", it.id)
+                    intent.putExtra("longitude", it.longitude)
+                    intent.putExtra("latitude", it.latitude)
                     startActivity(intent)
                     activity?.finish()
                 }
@@ -144,13 +150,15 @@ class AudioPersonali : Fragment() {
         }
     }
 
-    private fun showShowConfirmationDialog(token: String, id: Int) {
+    private fun showShowConfirmationDialog(token: String, id: Int, lon: Double, lat: Double) {
         val builder = AlertDialog.Builder(requireContext())
         builder.setTitle("Conferma")
             .setMessage("L'audio è nascosto. Per visualizzare i suoi dati devi renderlo visibile. Procedere?")
             .setPositiveButton("Si") { dialog, which ->
                 audioViewModel.showAudio(token, id)
                 audio_id = id
+                longitude = lon
+                latitude = lat
                 dialog.dismiss()
             }
             .setNegativeButton("No") { dialog, which ->
