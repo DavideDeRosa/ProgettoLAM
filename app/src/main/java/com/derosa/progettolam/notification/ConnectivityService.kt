@@ -105,24 +105,15 @@ class ConnectivityService : Service() {
                 val fileUpload =
                     MultipartBody.Part.createFormData("file", mp3File.name, requestBody)
 
-                uploadAudioAPI(token, upload.longitude!!, upload.latitude!!, fileUpload)
-                deleteUpload(username, upload.longitude, upload.latitude)
+                uploadAudioAPI(username, token, upload.longitude!!, upload.latitude!!, fileUpload)
             } else {
                 Log.d("File Error", "MP3 file does not exist or cannot be read.")
             }
         }
     }
 
-    private fun deleteUpload(username: String, longitude: Double, latitude: Double) {
-        serviceScope.launch {
-            withContext(Dispatchers.IO) {
-                audioDatabase.uploadDataDao()
-                    .deleteUpload(username, longitude, latitude)
-            }
-        }
-    }
-
     private fun uploadAudioAPI(
+        username: String,
         token: String,
         longitude: Double,
         latitude: Double,
@@ -157,6 +148,9 @@ class ConnectivityService : Service() {
                                         instrument = uploadData.instrument.getMaxInstrument().first
                                     )
                                 )
+
+                                audioDatabase.uploadDataDao()
+                                    .deleteUpload(username, longitude, latitude)
 
                                 Log.e(
                                     "upload success",

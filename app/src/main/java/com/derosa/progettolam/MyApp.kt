@@ -4,9 +4,8 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
-import androidx.lifecycle.LifecycleObserver
 
-class MyApp : Application(), LifecycleObserver {
+class MyApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
