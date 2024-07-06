@@ -12,7 +12,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        android:fontFamily="@font/conthraxsb"
         android:text="@string/i_tuoi_audio"
+        android:textColor="@color/grey"
         android:textAlignment="center"
         android:textSize="27sp"
         android:textStyle="bold" />

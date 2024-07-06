@@ -11,6 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:fontFamily="@font/conthraxsb"
         android:gravity="center"
         android:padding="16dp"
         android:text="@string/offline_msg"
@@ -23,6 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="100dp"
+        android:fontFamily="@font/conthraxsb"
         android:padding="16dp"
         android:text="Ciao, "
         android:textAlignment="center"
@@ -34,8 +36,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:fontFamily="@font/conthraxsb"
         android:padding="16dp"
         android:text="@string/account_information"
+        android:textAlignment="center"
         android:textSize="18sp" />
 
     <LinearLayout
@@ -53,6 +57,7 @@
             android:layout_margin="8dp"
             android:layout_weight="1"
             android:background="@color/grey"
+            android:fontFamily="@font/conthraxsb"
             android:padding="10dp"
             android:text="Logout"
             android:textColor="@color/white" />
@@ -64,6 +69,7 @@
             android:layout_margin="8dp"
             android:layout_weight="1"
             android:background="@color/red"
+            android:fontFamily="@font/conthraxsb"
             android:padding="10dp"
             android:text="Cancella account"
             android:textColor="@color/white" />

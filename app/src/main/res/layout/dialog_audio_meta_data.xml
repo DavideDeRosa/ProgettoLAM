@@ -15,63 +15,75 @@
             android:id="@+id/textIniziale"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:fontFamily="@font/conthraxsb"
             android:text="@string/info_audio"
             android:textAlignment="center"
-            android:textSize="40sp"
+            android:textColor="@color/grey"
+            android:textSize="30sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textCreatorUsername"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textLuogo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textLongitude"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textLatitude"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textBpm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textDanceability"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textLoudness"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textTopMood"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textTopGenre"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:textStyle="bold" />
 
         <TextView

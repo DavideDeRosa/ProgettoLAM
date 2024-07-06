@@ -12,8 +12,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        android:fontFamily="@font/conthraxsb"
         android:text="@string/audio_da_caricare"
         android:textAlignment="center"
+        android:textColor="@color/grey"
         android:textSize="27sp"
         android:textStyle="bold" />
 

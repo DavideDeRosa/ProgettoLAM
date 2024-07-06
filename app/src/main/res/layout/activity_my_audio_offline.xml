@@ -15,9 +15,12 @@
             android:id="@+id/textInizialeOffline"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:fontFamily="@font/conthraxsb"
             android:text="@string/info_audio"
             android:textAlignment="center"
-            android:textSize="40sp"
+            android:textColor="@color/grey"
+            android:textSize="30sp"
             android:textStyle="bold"
             android:visibility="invisible" />
 
@@ -25,60 +28,80 @@
             android:id="@+id/textCreatorUsernameOffline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:paddingHorizontal="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textLuogoOffline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:paddingHorizontal="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textLongitudeOffline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:paddingHorizontal="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textLatitudeOffline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:paddingHorizontal="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textBpmOffline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:paddingHorizontal="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textDanceabilityOffline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:paddingHorizontal="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textLoudnessOffline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:paddingHorizontal="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textTopMoodOffline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:paddingHorizontal="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textTopGenreOffline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:paddingHorizontal="10dp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textTopInstrumentOffline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:paddingHorizontal="10dp"
             android:textStyle="bold" />
 
         <LinearLayout

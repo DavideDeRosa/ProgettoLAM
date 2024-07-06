@@ -7,6 +7,7 @@ import android.location.Geocoder
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.derosa.progettolam.R
 import com.derosa.progettolam.databinding.MyAudioItemBinding
 import com.derosa.progettolam.pojo.MyAudio
 import java.io.IOException
@@ -33,6 +34,8 @@ class MyAudioAdapter(private val context: Context?) : RecyclerView.Adapter<MyAud
     }
 
     override fun onBindViewHolder(holder: MyAudioViewHolder, position: Int) {
+        holder.binding.root.setBackgroundResource(R.drawable.rounded_black_border_lightgreen)
+
         var location = getLocationName(myAudioList[position].longitude, myAudioList[position].latitude)
 
         if (location == "") {

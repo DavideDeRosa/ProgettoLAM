@@ -8,7 +8,6 @@
         android:id="@+id/txtLuogoMyAudio"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/rounded_black_border"
         android:paddingHorizontal="40dp"
         android:paddingVertical="5dp"
         android:textAlignment="center"

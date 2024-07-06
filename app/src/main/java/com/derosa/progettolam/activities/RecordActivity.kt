@@ -621,6 +621,8 @@ class RecordActivity : AppCompatActivity() {
     private fun showUIAfterStartRecording() {
         btnStartRecording.isEnabled = false
         btnStartRecording.setBackgroundResource(R.color.grey_opaque)
+        btnImport.isEnabled = false
+        btnImport.setBackgroundResource(R.color.grey_opaque)
 
         btnStopRecording.visibility = View.VISIBLE
     }

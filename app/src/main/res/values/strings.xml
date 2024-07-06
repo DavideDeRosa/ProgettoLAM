@@ -15,9 +15,10 @@
     <string name="cancella_registrazione">Cancella registrazione</string>
     <string name="conferma_registrazione">Conferma registrazione</string>
     <string name="stop">Stop</string>
-    <string name="registra_nuovo_audio">REGISTRA NUOVO AUDIO</string>
+    <string name="registra_nuovo_audio">REGISTRA AUDIO</string>
     <string name="offline_msg">Sei in modalità Offline.\nRiavvia l\'app una volta stabilita una connessione ad internet stabile!</string>
     <string name="audio_da_caricare">AUDIO DA CARICARE</string>
     <string name="tutti_gli_audio">TUTTI GLI AUDIO</string>
     <string name="importa_registrazione">Importa registrazione</string>
+    <string name="se_non_sei_registrato_nclicca_qui">Se non sei registrato,\nclicca qui!</string>
 </resources>
