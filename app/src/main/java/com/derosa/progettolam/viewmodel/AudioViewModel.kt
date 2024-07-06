@@ -493,7 +493,7 @@ class AudioViewModel(val audioDatabase: AudioDatabase) : ViewModel() {
     private lateinit var listUploadDbLiveData: LiveData<List<UploadDataEntity>>
 
     //LiveData AllAudioData
-    private var allAudioDbMLiveData = MutableLiveData<List<AllAudioDataEntity>>()
+    private var allAudioDbMLiveData = SingleLiveEvent<List<AllAudioDataEntity>>()
     private var allAudioDbLiveData: LiveData<List<AllAudioDataEntity>> = allAudioDbMLiveData
 
     fun insertAudioDb(audio: AudioDataEntity) {
