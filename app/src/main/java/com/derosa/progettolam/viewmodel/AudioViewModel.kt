@@ -1,6 +1,9 @@
 package com.derosa.progettolam.viewmodel
 
 import SingleLiveEvent
+import android.content.Context
+import android.location.Address
+import android.location.Geocoder
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -30,6 +33,8 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.IOException
+import java.util.Locale
 
 class AudioViewModel(val audioDatabase: AudioDatabase) : ViewModel() {
 
@@ -568,5 +573,92 @@ class AudioViewModel(val audioDatabase: AudioDatabase) : ViewModel() {
 
     fun observeAllAudioDbLiveData(): LiveData<List<AllAudioDataEntity>> {
         return allAudioDbLiveData
+    }
+
+    //SEZIONE AUTOMATIC FETCH
+    fun getAllAudioByCoordFetch(
+        token: String,
+        id: Int,
+        longitude: Double,
+        latitude: Double,
+        context: Context
+    ) {
+        viewModelScope.launch {
+            val list = audioDatabase.allAudioDataDao().getAllAudioByCoord(longitude, latitude)
+            if (list.isEmpty()) {
+                getAudioByIdFetch(token, id, context)
+            }
+        }
+    }
+
+    private fun getAudioByIdFetch(token: String, audioid: Int, context: Context) {
+        RetrofitInstance.api.getAudioById(token, audioid).enqueue(object : Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                if (response.isSuccessful) {
+                    val audioMetaData =
+                        gson.fromJson(
+                            response.body()!!.string(),
+                            AudioMetaData::class.java
+                        )
+
+                    Log.d(
+                        "AudioById 200",
+                        "AudioById 200: " + audioMetaData.toString()
+                    )
+
+                    saveIntoDb(audioMetaData, context)
+                } else {
+                    if (response.code() == 401) {   //LOGICA SE UTENTE NON AUTORIZZATO
+                        val userNotAuthorized = gson.fromJson(
+                            response.errorBody()!!.string(),
+                            UserNotAuthorized::class.java
+                        )
+
+                        Log.d(
+                            "AudioById 401",
+                            "AudioById 401 User Not Authorized: " + userNotAuthorized.detail
+                        )
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                Log.d("Fail AudioById", t.message.toString())
+            }
+        })
+    }
+
+    private fun saveIntoDb(audio: AudioMetaData, context: Context) {
+        insertAllAudioDb(
+            AllAudioDataEntity(
+                id = audio.id,
+                username = audio.creator_username,
+                longitude = audio.longitude,
+                latitude = audio.latitude,
+                locationName = getLocationName(audio.longitude, audio.latitude, context),
+                bpm = audio.tags.bpm,
+                danceability = audio.tags.danceability,
+                loudness = audio.tags.loudness,
+                genre = audio.tags.genre.getMaxGenre().first,
+                instrument = audio.tags.instrument.getMaxInstrument().first,
+                mood = audio.tags.mood.getMaxMood().first
+            )
+        )
+    }
+
+    private fun getLocationName(longitude: Double, latitude: Double, context: Context): String {
+        val geocoder = Geocoder(context, Locale.getDefault())
+        var locationName = ""
+
+        try {
+            val addresses: List<Address>? = geocoder.getFromLocation(latitude, longitude, 1)
+            if (addresses != null && addresses.isNotEmpty()) {
+                locationName = addresses[0].getAddressLine(0)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return locationName
     }
 }
