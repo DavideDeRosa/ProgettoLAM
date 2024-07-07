@@ -154,6 +154,35 @@ class RecordActivity : AppCompatActivity() {
         }
     }
 
+    private fun observeUpload() {
+        audioViewModel.observeFileCorrectlyUploadedLiveData().observe(this) {
+            Toast.makeText(this, "Caricamento avvenuto con successo!", Toast.LENGTH_SHORT).show()
+
+            audioViewModel.insertAudioDb(
+                AudioDataEntity(
+                    username = DataSingleton.username,
+                    longitude = longitude,
+                    latitude = latitude,
+                    locationName = getLocationName(longitude, latitude),
+                    bpm = it.bpm,
+                    danceability = it.danceability,
+                    loudness = it.loudness,
+                    genre = it.genre.getMaxGenre().first,
+                    mood = it.mood.getMaxMood().first,
+                    instrument = it.instrument.getMaxInstrument().first
+                )
+            )
+
+            goToAppActivity()
+        }
+
+        audioViewModel.observeFileCorrectlyUploadedErrorLiveData().observe(this) {
+            Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+            deleteRecording()
+            goToLogin()
+        }
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 1 && resultCode == RESULT_OK) {
@@ -195,35 +224,6 @@ class RecordActivity : AppCompatActivity() {
         }
     }
 
-    private fun observeUpload() {
-        audioViewModel.observeFileCorrectlyUploadedLiveData().observe(this) {
-            Toast.makeText(this, "Caricamento avvenuto con successo!", Toast.LENGTH_SHORT).show()
-
-            audioViewModel.insertAudioDb(
-                AudioDataEntity(
-                    username = DataSingleton.username,
-                    longitude = longitude,
-                    latitude = latitude,
-                    locationName = getLocationName(longitude, latitude),
-                    bpm = it.bpm,
-                    danceability = it.danceability,
-                    loudness = it.loudness,
-                    genre = it.genre.getMaxGenre().first,
-                    mood = it.mood.getMaxMood().first,
-                    instrument = it.instrument.getMaxInstrument().first
-                )
-            )
-
-            goToAppActivity()
-        }
-
-        audioViewModel.observeFileCorrectlyUploadedErrorLiveData().observe(this) {
-            Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
-            deleteRecording()
-            goToLogin()
-        }
-    }
-
     private fun startRecording() {
         val username = DataSingleton.username
         if (mediaRecorder == null) {
@@ -237,6 +237,7 @@ class RecordActivity : AppCompatActivity() {
                     externalCacheDir?.absolutePath + "/" + username + "_" + longitude + "_" + latitude + ".mp4"
 
                 setOutputFile(recordedFilePath)
+
                 try {
                     prepare()
                     start()
@@ -258,6 +259,7 @@ class RecordActivity : AppCompatActivity() {
                 handler.postDelayed(this, 1000)
             }
         }
+
         handler.post(runnable)
     }
 

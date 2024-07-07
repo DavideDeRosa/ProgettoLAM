@@ -37,7 +37,6 @@ class Account : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_account, container, false)
     }
 
@@ -54,7 +53,6 @@ class Account : Fragment() {
             view.findViewById<Button>(R.id.btnLogout).visibility = View.GONE
             view.findViewById<Button>(R.id.btnUnsub).visibility = View.GONE
         } else {
-
             val btnUnsub = view.findViewById<Button>(R.id.btnUnsub)
             val btnLogout = view.findViewById<Button>(R.id.btnLogout)
             val txtUsername = view.findViewById<TextView>(R.id.txtUsername)
@@ -83,27 +81,20 @@ class Account : Fragment() {
                 goToLogin()
             }
 
-            userViewModel.observeUserCorrectlyRemovedLiveData().observe(viewLifecycleOwner) {
-                Toast.makeText(activity, it.detail, Toast.LENGTH_SHORT).show()
-                goToLogin()
-            }
-
-            userViewModel.observeUserCorrectlyRemovedErrorLiveData().observe(viewLifecycleOwner) {
-                Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
-                goToLogin()
-            }
+            observeUnsubscribe()
         }
     }
 
-    private fun goToLogin() {
-        DataSingleton.token = null
-        DataSingleton.username = null
+    private fun observeUnsubscribe() {
+        userViewModel.observeUserCorrectlyRemovedLiveData().observe(viewLifecycleOwner) {
+            Toast.makeText(activity, it.detail, Toast.LENGTH_SHORT).show()
+            goToLogin()
+        }
 
-        ExtraUtil.clearTokenAndUsername(requireContext())
-
-        val intent = Intent(activity, LoginActivity::class.java)
-        startActivity(intent)
-        activity?.finish()
+        userViewModel.observeUserCorrectlyRemovedErrorLiveData().observe(viewLifecycleOwner) {
+            Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
+            goToLogin()
+        }
     }
 
     private fun showUnsubscribeConfirmationDialog(token: String) {
@@ -118,5 +109,16 @@ class Account : Fragment() {
                 dialog.dismiss()
             }
             .show()
+    }
+
+    private fun goToLogin() {
+        DataSingleton.token = null
+        DataSingleton.username = null
+
+        ExtraUtil.clearTokenAndUsername(requireContext())
+
+        val intent = Intent(activity, LoginActivity::class.java)
+        startActivity(intent)
+        activity?.finish()
     }
 }

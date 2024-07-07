@@ -10,8 +10,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
-import com.derosa.progettolam.db.AudioDatabase
 import com.derosa.progettolam.db.AudioDataEntity
+import com.derosa.progettolam.db.AudioDatabase
 import com.derosa.progettolam.viewmodel.AudioViewModel
 import com.derosa.progettolam.viewmodel.AudioViewModelFactory
 import java.io.File
@@ -32,6 +32,11 @@ class MyAudioOfflineActivity : AppCompatActivity() {
         val id = intent.getIntExtra("audio_id_offline", 0)
 
         audioViewModel.getAudioById(id)
+
+        observeAudioByIdDb()
+    }
+
+    private fun observeAudioByIdDb() {
         audioViewModel.observeAudioDbLiveData().observe(this) {
             initializeFromDb(it)
         }
@@ -48,10 +53,8 @@ class MyAudioOfflineActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.textDanceabilityOffline).text =
             "Danzabilità: ${audio.danceability}"
         findViewById<TextView>(R.id.textLoudnessOffline).text = "Rumorosità: ${audio.loudness}"
-
         findViewById<TextView>(R.id.textLuogoOffline).text =
             "Località: ${audio.locationName}"
-
         findViewById<TextView>(R.id.textTopMoodOffline).text = "Mood: ${audio.mood}"
         findViewById<TextView>(R.id.textTopGenreOffline).text = "Genere: ${audio.genre}"
         findViewById<TextView>(R.id.textTopInstrumentOffline).text =

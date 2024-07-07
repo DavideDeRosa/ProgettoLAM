@@ -26,6 +26,7 @@ import java.util.Locale
 class MapListActivity : AppCompatActivity() {
 
     private lateinit var audioViewModel: AudioViewModel
+    private lateinit var mapListAdapter: MapListAdapter
     private var id = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,7 +38,7 @@ class MapListActivity : AppCompatActivity() {
         audioViewModel = ViewModelProvider(this, viewModelFactory)[AudioViewModel::class.java]
 
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewMapList)
-        val mapListAdapter = MapListAdapter(this)
+        mapListAdapter = MapListAdapter(this)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = mapListAdapter
         recyclerView.addItemDecoration(SpacingItemDecoration(20))
@@ -47,6 +48,21 @@ class MapListActivity : AppCompatActivity() {
             audioViewModel.allAudio(token)
         }
 
+        observeAllAudio()
+        observeAllAudioDb()
+        observeAudioById()
+
+        mapListAdapter.onItemClick = {
+            id = it.id
+
+            audioViewModel.getAllAudioByCoord(
+                it.longitude,
+                it.latitude
+            )
+        }
+    }
+
+    private fun observeAllAudio() {
         audioViewModel.observeAllAudioLiveData().observe(this) {
             mapListAdapter.setMapList(ArrayList(it))
         }
@@ -55,7 +71,9 @@ class MapListActivity : AppCompatActivity() {
             Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
             goToLogin()
         }
+    }
 
+    private fun observeAllAudioDb() {
         audioViewModel.observeAllAudioDbLiveData().observe(this) { list ->
             if (list.isEmpty()) {
                 val token = DataSingleton.token
@@ -67,7 +85,9 @@ class MapListActivity : AppCompatActivity() {
                 customDialog.show(supportFragmentManager, "AudioMetaDataDialog")
             }
         }
+    }
 
+    private fun observeAudioById() {
         audioViewModel.observeAudioByIdLiveData().observe(this) {
             saveIntoDb(it)
             val customDialog = AudioMetadataDialog(it, null)
@@ -77,14 +97,6 @@ class MapListActivity : AppCompatActivity() {
         audioViewModel.observeAudioByIdErrorLiveData().observe(this) {
             Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
             goToLogin()
-        }
-
-        mapListAdapter.onItemClick = {
-            id = it.id
-            audioViewModel.getAllAudioByCoord(
-                it.longitude,
-                it.latitude
-            )
         }
     }
 

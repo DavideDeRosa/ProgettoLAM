@@ -22,5 +22,9 @@ interface AudioDataDao {
     fun getAudioById(id: Int): LiveData<AudioDataEntity>
 
     @Query("SELECT * FROM audiodata WHERE username = :username AND longitude = :longitude AND latitude = :latitude")
-    fun getAudioByCoord(username: String, longitude: Double, latitude: Double): LiveData<List<AudioDataEntity>>
+    fun getAudioByCoord(
+        username: String,
+        longitude: Double,
+        latitude: Double
+    ): LiveData<List<AudioDataEntity>>
 }

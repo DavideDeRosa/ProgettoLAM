@@ -185,7 +185,6 @@ class ConnectivityService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-
         unregisterReceiver(connectivityReceiver)
     }
 

@@ -488,6 +488,7 @@ class AudioViewModel(val audioDatabase: AudioDatabase) : ViewModel() {
         return audioDeleteErrorLiveData
     }
 
+
     //SEZIONE DATABASE
     //LiveData AudioData
     private lateinit var listAudioDbLiveData: LiveData<List<AudioDataEntity>>
@@ -574,6 +575,7 @@ class AudioViewModel(val audioDatabase: AudioDatabase) : ViewModel() {
     fun observeAllAudioDbLiveData(): LiveData<List<AllAudioDataEntity>> {
         return allAudioDbLiveData
     }
+
 
     //SEZIONE AUTOMATIC FETCH
     fun getAllAudioByCoordFetch(

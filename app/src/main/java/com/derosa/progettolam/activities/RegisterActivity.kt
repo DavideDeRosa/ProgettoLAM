@@ -1,12 +1,12 @@
 package com.derosa.progettolam.activities
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.derosa.progettolam.R
 import com.derosa.progettolam.pojo.User
@@ -27,6 +27,8 @@ class RegisterActivity : AppCompatActivity() {
         val btnLogin = findViewById<Button>(R.id.btnRegister)
         val textLogin = findViewById<TextView>(R.id.textViewLoginLink)
 
+        observeRegister()
+
         btnLogin.setOnClickListener {
             val username = textUsername.text.toString().trim()
             val password = textPassword.text.toString().trim()
@@ -41,7 +43,9 @@ class RegisterActivity : AppCompatActivity() {
         textLogin.setOnClickListener {
             goToLogin()
         }
+    }
 
+    private fun observeRegister() {
         userViewModel.observeUserCorrectlySignedUpLiveData().observe(this) {
             goToLogin()
         }

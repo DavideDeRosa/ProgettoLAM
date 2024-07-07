@@ -178,5 +178,4 @@ class UserViewModel : ViewModel() {
     fun observeUserCorrectlyRemovedErrorLiveData(): LiveData<String> {
         return userCorrectlyRemovedErrorLiveData
     }
-
 }

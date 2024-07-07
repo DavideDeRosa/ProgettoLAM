@@ -47,14 +47,19 @@ class MyAudioActivity : AppCompatActivity() {
         longitude = intent.getDoubleExtra("longitude", 0.0)
         latitude = intent.getDoubleExtra("latitude", 0.0)
 
-        val token = DataSingleton.token
         val username = DataSingleton.username
         if (username != null) {
             audioViewModel.getAudioByCoordDb(username, longitude, latitude)
         }
 
+        observeAudioByCoordDb()
+        observeAudioById()
+    }
+
+    private fun observeAudioByCoordDb() {
         audioViewModel.observeAudioByCoordDbLiveData().observe(this) {
             if (it.isEmpty()) {
+                val token = DataSingleton.token
                 if (token != null) {
                     audioViewModel.getAudioById(token, id)
                 }
@@ -63,7 +68,9 @@ class MyAudioActivity : AppCompatActivity() {
                 initializeFromDb()
             }
         }
+    }
 
+    private fun observeAudioById() {
         audioViewModel.observeAudioByIdLiveData().observe(this) {
             audio = it
             saveIntoDb(it)
@@ -102,17 +109,12 @@ class MyAudioActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.textCreatorUsername).text =
             "Username del creatore: ${audioDb.username}"
         findViewById<TextView>(R.id.textBpm).text = "BPM: ${audioDb.bpm}"
-        findViewById<TextView>(R.id.textDanceability).text =
-            "Danzabilità: ${audioDb.danceability}"
+        findViewById<TextView>(R.id.textDanceability).text = "Danzabilità: ${audioDb.danceability}"
         findViewById<TextView>(R.id.textLoudness).text = "Rumorosità: ${audioDb.loudness}"
-
         findViewById<TextView>(R.id.textLuogo).text =
             "Località: " + getLocationName(audioDb.longitude!!, audioDb.latitude!!)
-
         findViewById<TextView>(R.id.textTopMood).text = "Mood: ${audioDb.mood}"
-
         findViewById<TextView>(R.id.textTopGenre).text = "Genere: ${audioDb.genre}"
-
         findViewById<TextView>(R.id.textTopInstrument).text =
             "Strumento principale: ${audioDb.instrument}"
 
@@ -188,7 +190,6 @@ class MyAudioActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.textDanceability).text =
             "Danzabilità: ${audio.tags.danceability}"
         findViewById<TextView>(R.id.textLoudness).text = "Rumorosità: ${audio.tags.loudness}"
-
         findViewById<TextView>(R.id.textLuogo).text =
             "Località: " + getLocationName(audio.longitude, audio.latitude)
 
@@ -266,9 +267,7 @@ class MyAudioActivity : AppCompatActivity() {
     private fun observeAll() {
         audioViewModel.observeAudioHideLiveData().observe(this) {
             Toast.makeText(this, it.detail, Toast.LENGTH_SHORT).show()
-            val intent = Intent(this, AppActivity::class.java)
-            startActivity(intent)
-            finish()
+            goToAppActivity()
         }
 
         audioViewModel.observeAudioHideErrorLiveData().observe(this) {
@@ -285,9 +284,7 @@ class MyAudioActivity : AppCompatActivity() {
                 audioViewModel.deleteAudioDb(username, longitude, latitude)
             }
 
-            val intent = Intent(this, AppActivity::class.java)
-            startActivity(intent)
-            finish()
+            goToAppActivity()
         }
 
         audioViewModel.observeAudioDeleteErrorLiveData().observe(this) {
@@ -352,6 +349,12 @@ class MyAudioActivity : AppCompatActivity() {
         finish()
     }
 
+    private fun goToAppActivity() {
+        val intent = Intent(this, AppActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
     override fun onBackPressed() {
         super.onBackPressed()
 
@@ -363,9 +366,7 @@ class MyAudioActivity : AppCompatActivity() {
             mediaPlayer = null
         }
 
-        val intent = Intent(this, AppActivity::class.java)
-        startActivity(intent)
-        finish()
+        goToAppActivity()
     }
 
     override fun onDestroy() {

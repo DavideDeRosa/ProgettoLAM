@@ -13,7 +13,8 @@ import com.derosa.progettolam.pojo.MyAudio
 import java.io.IOException
 import java.util.Locale
 
-class MyAudioAdapter(private val context: Context?) : RecyclerView.Adapter<MyAudioAdapter.MyAudioViewHolder>() {
+class MyAudioAdapter(private val context: Context?) :
+    RecyclerView.Adapter<MyAudioAdapter.MyAudioViewHolder>() {
 
     inner class MyAudioViewHolder(val binding: MyAudioItemBinding) :
         RecyclerView.ViewHolder(binding.root)
@@ -36,10 +37,12 @@ class MyAudioAdapter(private val context: Context?) : RecyclerView.Adapter<MyAud
     override fun onBindViewHolder(holder: MyAudioViewHolder, position: Int) {
         holder.binding.root.setBackgroundResource(R.drawable.rounded_black_border_lightgreen)
 
-        var location = getLocationName(myAudioList[position].longitude, myAudioList[position].latitude)
+        var location =
+            getLocationName(myAudioList[position].longitude, myAudioList[position].latitude)
 
         if (location == "") {
-            holder.binding.txtLuogoMyAudio.text = "Luogo sconosciuto! Longitudine: " + myAudioList[position].longitude + " Latitudine: " + myAudioList[position].latitude
+            holder.binding.txtLuogoMyAudio.text =
+                "Luogo sconosciuto! Longitudine: " + myAudioList[position].longitude + " Latitudine: " + myAudioList[position].latitude
         } else {
             holder.binding.txtLuogoMyAudio.text = location
         }

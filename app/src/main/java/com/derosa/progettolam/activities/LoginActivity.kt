@@ -22,6 +22,8 @@ import com.derosa.progettolam.viewmodel.UserViewModel
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var userViewModel: UserViewModel
+    private var username = ""
+    private var password = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,19 +45,15 @@ class LoginActivity : AppCompatActivity() {
                 "Nessuna connessione.\nSei in modalità Offline!",
                 Toast.LENGTH_LONG
             ).show()
-            val intent = Intent(this, AppActivity::class.java)
-            startActivity(intent)
-            finish()
+
+            goToAppActivity()
         } else {
             val (savedToken, savedUsername) = ExtraUtil.getTokenAndUsername(this)
             if (savedToken != null && savedUsername != null) {
-
                 DataSingleton.token = savedToken
                 DataSingleton.username = savedUsername
 
-                val intent = Intent(this, AppActivity::class.java)
-                startActivity(intent)
-                finish()
+                goToAppActivity()
             } else {
                 userViewModel = ViewModelProvider(this)[UserViewModel::class.java]
 
@@ -63,11 +61,12 @@ class LoginActivity : AppCompatActivity() {
                 val textPassword = findViewById<EditText>(R.id.textPassword)
                 val btnLogin = findViewById<Button>(R.id.btnLogin)
                 val textRegister = findViewById<TextView>(R.id.textViewRegisterLink)
-                lateinit var username: String
+
+                observeLogin()
 
                 btnLogin.setOnClickListener {
                     username = textUsername.text.toString().trim()
-                    val password = textPassword.text.toString().trim()
+                    password = textPassword.text.toString().trim()
 
                     if (username.isNotEmpty() && password.isNotEmpty()) {
                         userViewModel.authToken(username, password)
@@ -82,22 +81,22 @@ class LoginActivity : AppCompatActivity() {
                     startActivity(intent)
                     finish()
                 }
-
-                userViewModel.observeUserCorrectlySignedUpTokenLiveData().observe(this) {
-                    DataSingleton.token = "Bearer " + it.client_secret
-                    DataSingleton.username = username
-
-                    ExtraUtil.saveTokenAndUsername("Bearer " + it.client_secret, username, this)
-
-                    val intent = Intent(this, AppActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                }
-
-                userViewModel.observeUserCorrectlySignedUpTokenErrorLiveData().observe(this) {
-                    Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
-                }
             }
+        }
+    }
+
+    private fun observeLogin() {
+        userViewModel.observeUserCorrectlySignedUpTokenLiveData().observe(this) {
+            DataSingleton.token = "Bearer " + it.client_secret
+            DataSingleton.username = username
+
+            ExtraUtil.saveTokenAndUsername("Bearer " + it.client_secret, username, this)
+
+            goToAppActivity()
+        }
+
+        userViewModel.observeUserCorrectlySignedUpTokenErrorLiveData().observe(this) {
+            Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -134,5 +133,11 @@ class LoginActivity : AppCompatActivity() {
 
     companion object {
         const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
+    }
+
+    private fun goToAppActivity() {
+        val intent = Intent(this, AppActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 }

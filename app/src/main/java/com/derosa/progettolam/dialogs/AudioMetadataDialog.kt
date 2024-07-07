@@ -62,7 +62,6 @@ class AudioMetadataDialog(
         view.findViewById<TextView>(R.id.textDanceability).text =
             "Danzabilità: ${audio.tags.danceability}"
         view.findViewById<TextView>(R.id.textLoudness).text = "Rumorosità: ${audio.tags.loudness}"
-
         view.findViewById<TextView>(R.id.textLuogo).text =
             "Località: " + getLocationName(audio.longitude, audio.latitude)
 
@@ -86,14 +85,10 @@ class AudioMetadataDialog(
         view.findViewById<TextView>(R.id.textDanceability).text =
             "Danzabilità: ${audioDb.danceability}"
         view.findViewById<TextView>(R.id.textLoudness).text = "Rumorosità: ${audioDb.loudness}"
-
         view.findViewById<TextView>(R.id.textLuogo).text =
             "Località: " + getLocationName(audioDb.longitude!!, audioDb.latitude!!)
-
         view.findViewById<TextView>(R.id.textTopMood).text = "Mood: ${audioDb.mood}"
-
         view.findViewById<TextView>(R.id.textTopGenre).text = "Genere: ${audioDb.genre}"
-
         view.findViewById<TextView>(R.id.textTopInstrument).text =
             "Strumento principale: ${audioDb.instrument}"
     }
